@@ -30,8 +30,6 @@ function [Mk,ShelfID,T0,S0] = PICO_driver(CtrlVar,MUA,GF,b,rho,PICO_opts)
 %   - Tbasins: for each basin ID, the corresponding temperature T0
 %   - Sbasins: for each basin ID, the corresponding salinity S0
 %
-
-
 x = MUA.coordinates(:,1); y = MUA.coordinates(:,2);
 
 if ~exist('PICO_opts','var')
