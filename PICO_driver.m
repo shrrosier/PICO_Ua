@@ -6,7 +6,7 @@ function [Mk,ShelfID,T0,S0] = PICO_driver(CtrlVar,MUA,GF,b,rho,PICO_opts)
 % THE WATERSHED OPTION MAY BE FASTER BUT REQUIRES THE IMAGE PROCESSING TOOLBOX 
 %
 % Exampple Usage:
-%   Mk = PICO_driver(CtrlVar,MUA,GF,b,rho,PICO_opts)
+%   [Mk,ShelfID,T0,S0] = PICO_driver(CtrlVar,MUA,GF,b,rho,PICO_opts)
 %
 %
 % Inputs:
