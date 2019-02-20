@@ -8,7 +8,6 @@ function [Mk,ShelfID,T0,S0] = PICO_driver(CtrlVar,MUA,GF,b,rho,PICO_opts)
 % Exampple Usage:
 %   [Mk,ShelfID,T0,S0] = PICO_driver(CtrlVar,MUA,GF,b,rho,PICO_opts)
 %
-%
 % Inputs:
 %
 %   CtrlVar: Control Variables (Ua structure)
