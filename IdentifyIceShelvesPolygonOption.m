@@ -1,8 +1,8 @@
-function [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,minArea,minNumS,nmax)
+function [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,minArea,minNumS,nmax,MeshBoundaryCoordinates)
 
 %load('Schmitko.mat');
 %load('MeshBoundaryCoordinates.mat');
-load ResultsFiles/AntarcticSetup_BFRN_transient_run3/MeshBoundaryCoordinates.mat;
+% load ResultsFiles/AntarcticSetup_BFRN_transient_run3/MeshBoundaryCoordinates.mat;
 
 [ShelfID,ShelfGLx,ShelfGLy,ShelfFrontx,ShelfFronty] = GetShelfID(CtrlVar, MUA, GF, MeshBoundaryCoordinates,minArea,minNumS);
 

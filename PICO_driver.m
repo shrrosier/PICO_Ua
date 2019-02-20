@@ -3,7 +3,7 @@ function [Mk,ShelfID,T0,S0] = PICO_driver(CtrlVar,MUA,GF,b,rho,PICO_opts)
 % PICO melt rate parameterisation v0.3
 % Outputs melt rate in units of metres per year
 % NOTE:
-% THE WATERSHED OPTION MAY BE FASTER BUT REQUIRES THE IMAGE PROCESSING TOOLBOX 
+% THE WATERSHED OPTION MAY BE FASTER BUT REQUIRES THE IMAGE PROCESSING TOOLBOX
 %
 % Exampple Usage:
 %   [Mk,ShelfID,T0,S0] = PICO_driver(CtrlVar,MUA,GF,b,rho,PICO_opts)
@@ -22,12 +22,17 @@ function [Mk,ShelfID,T0,S0] = PICO_driver(CtrlVar,MUA,GF,b,rho,PICO_opts)
 %   (only used in watershed algorithm)
 %   - SmallShelfMelt: melt to floating regions not included in PICO boxes i.e. 0
 %   - nmax: maximum number of PICO boxes (optional, default = 5)
+%   - minArea: minimum area for an ice shelf to be defined in PICO
+%   - minNumShelf: minimum number of floating nodes for an ice shelf to be
+%   defined in PICO
 %   - C: Overturning strength (optional, default = 1e6)
 %   - gamTstar: turbulent temp. exch. coeff. (optional, default = 2e-5)
 %   - BasinsFile: .mat file containing scattered interpolant of Basin IDs
 %   for you domain
 %   - Tbasins: for each basin ID, the corresponding temperature T0
 %   - Sbasins: for each basin ID, the corresponding salinity S0
+%   - MeshBoundaryCoordinates: Nnodes x 2 matrix containing the mesh boundary
+%   coordinates, as defined in Ua2DInitialUserInput (for polygon option)
 %
 x = MUA.coordinates(:,1); y = MUA.coordinates(:,2);
 
@@ -45,6 +50,12 @@ if ~isfield(PICO_opts,'gamTstar')
 end
 if ~isfield(PICO_opts,'nmax')
     PICO_opts.nmax = 5;
+end
+if ~isfield(PICO_opts,'minArea')
+    PICO_opts.minArea = 2e9;
+end
+if ~isfield(PICO_opts,'minNumShelf')
+    PICO_opts.minNumShelf = 20;
 end
 if ~isfield(PICO_opts,'SmallShelfMelt')
     PICO_opts.SmallShelfMelt = 0;
@@ -87,9 +98,12 @@ switch PICO_opts.algorithm
             warning('Using default resolution, change this in PICO_opts.PICOres');
         end
         
-        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,PICO_opts.PICOres,2e9,20,PICO_opts.nmax);
+        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,PICO_opts.PICOres,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax);
     case 'polygon'
-        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,2e9,20,PICO_opts.nmax);
+        if ~isfield(PICO_opts,'MeshBoundaryCoordinates')
+            error('PICO_opts.MeshBoundaryCoordinates must be defined for the polygon option');
+        end
+        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax,PICO_opts.MeshBoundaryCoordinates);
     otherwise
         error('Invalid algorithm, choose either "watershed" or "polygon"');
 end
