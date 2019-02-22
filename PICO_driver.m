@@ -158,7 +158,8 @@ for ii = 1:max(ShelfID)
     Tstar(ind) = calc_tstar(S0(ii),T0(ii),pk(ind));
     if any(Tstar > 0) % equivalent to: if T0 < T_pmp
         T_pmp = Tstar+T0(ii);
-        T0(ii) = max(T_pmp(ind))+0.001; % I think this is what PISM does
+         % ensure that temperature input to box 1 at least at pressure melting point
+         T0(ii) = max(T_pmp(ind)+0.001,T0(ii));
         Tstar(ind) = calc_tstar(S0(ii),T0(ii),pk(ind));
     end
     q1 = pcoeff(ii).*Tstar;
