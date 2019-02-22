@@ -1,4 +1,4 @@
-function [ShelfNum,BoxID,Ak,floating,rho_m] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,rho,PICOres,minArea,minNumS,nmax)
+function [ShelfNum,BoxID,Ak,floating] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,PICOres,minArea,minNumS,nmax)
 %
 % Function to generate unique shelf IDs with corresponding areas,
 % subdivided into boxes using the method described in Reese (2018).
@@ -96,7 +96,7 @@ end
 %% now calculate the box numbers for each ice shelf
 
 dmax = max(dGL);
-BoxID = dGL*0;
+BoxID = zeros(size(dGL));
 
 for ii = 1:max(ShelfNum) %need a second loop because only now do we know dmax
     ind = ShelfNum==ii;
@@ -119,16 +119,17 @@ end
 %% finally calculate the area of each box in each ice shelf
 
 Ak = zeros(max(ShelfNum),nmax);
-MUA2 = MUA;
-MUA2.nip = 1;
-TriArea = FEintegrate2D([],MUA2,ones(MUA.Nnodes,1));
 
+PBoxEle=ceil(SNodes2EleMean(MUA.connectivity,BoxID));
+ShelfIDEle = round(SNodes2EleMean(MUA.connectivity,ShelfNum));
+[Areas,~,~,~]=TriAreaFE(MUA.coordinates,MUA.connectivity);
+
+% Each row of Ak is a unique shelf and each column is a box number within
+% that shelf, each element of Ak is the total area of a box in a shelf
 for ii = 1:max(ShelfNum)
     for k = 1:nmax
-        ind = ShelfNum==ii & BoxID==k;
-        Ak(ii,k)=sum(TriArea(ind));
-        
-        rho_m(ii,k) = sum(rho(ind).*(TriArea(ind)./Ak(ii,k)));
+       ind = ShelfIDEle==ii & PBoxEle==k;
+       Ak(ii,k) = sum(Areas(ind));
     end
 end
 

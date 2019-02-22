@@ -1,4 +1,4 @@
-function [ShelfID,PBOX,Ak,floating,rho_m] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,rho,minArea,minNumS,nmax,MeshBoundaryCoordinates)
+function [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,minArea,minNumS,nmax,MeshBoundaryCoordinates)
 
 %load('Schmitko.mat');
 %load('MeshBoundaryCoordinates.mat');
@@ -8,7 +8,7 @@ function [ShelfID,PBOX,Ak,floating,rho_m] = IdentifyIceShelvesPolygonOption(Ctrl
 
 
 Ak = zeros(max(ShelfID),nmax);
-
+rho_m = Ak;
 
 x = MUA.coordinates(:,1);
 y = MUA.coordinates(:,2);
@@ -70,7 +70,6 @@ for ii = 1:max(ShelfID)
     for k = 1:nmax
        ind = ShelfIDEle==ii & PBoxEle==k;
        Ak(ii,k) = sum(Areas(ind));
-       rho_m(ii,k) = sum(rho(ind).*(TriArea(ind)./Ak(ii,k)));
     end
 end
 

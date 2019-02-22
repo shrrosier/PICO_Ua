@@ -1,6 +1,6 @@
-function [Mk,ShelfID,T0,S0,Tk,Sk] = PICO_driver(CtrlVar,MUA,GF,b,rho,PICO_opts)
+function [Mk,ShelfID,T0,S0,Tkm,Skm,q] = PICO_driver(CtrlVar,MUA,GF,b,rhoi,PICO_opts)
 %
-% PICO melt rate parameterisation v0.3
+% PICO melt rate parameterisation v0.4
 % Outputs melt rate in units of metres per year
 % NOTE:
 % THE WATERSHED OPTION MAY BE FASTER BUT REQUIRES THE IMAGE PROCESSING TOOLBOX
@@ -98,7 +98,7 @@ switch PICO_opts.algorithm
             warning('Using default resolution, change this in PICO_opts.PICOres');
         end
         
-        [ShelfID,PBOX,Ak,floating,rho_m] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,rho,PICO_opts.PICOres,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax);
+        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,PICO_opts.PICOres,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax);
     case 'polygon'
         if ~isfield(PICO_opts,'MeshBoundaryCoordinates')
             error('PICO_opts.MeshBoundaryCoordinates must be defined for the polygon option');
@@ -130,7 +130,7 @@ nmax = PICO_opts.nmax;
 
 % fix this... only need them for mu, calculate over each box?
 rhow = 1030;
-
+rho = 910;
 
 Sk = zeros(MUA.Nnodes,1);
 Tk = zeros(MUA.Nnodes,1);
@@ -139,22 +139,17 @@ Skm = zeros(max(ShelfID),nmax);
 Tstar = zeros(MUA.Nnodes,1);
 
 
-mu = rho_m./rhow;
-mu2 = rho./rhow;
+mu = rho./rhow;
 lambda = L/cp;
 s1 = S0./(mu*lambda);
 gk = Ak.*gamTstar;
-pk = -b.*9.81.*rho;
+pk = -b.*9.81.*rhoi;
 gk2 = gk./(mu*lambda);
 
 
 % ========================= box 1 ===============================
 
 pcoeff = get_p(gk(:,1),s1);
-
-MUA2 = MUA;
-MUA2.nip = 1;
-TriArea = FEintegrate2D([],MUA2,ones(MUA.Nnodes,1));
 
 for ii = 1:max(ShelfID)
     
@@ -173,17 +168,11 @@ for ii = 1:max(ShelfID)
         error('something went wrong here - ask Ronja!');
     end
     
-    
     Tk(ind) = T0(ii) - (-.5.*pcoeff(ii) + sqrt(DD(ind)));
-    Sk(ind) = S0(ii) - (S0(ii)/(mu(ii,1)*lambda)) * (T0(ii) - Tk(ind));
-
-    BoxArea = sum(TriArea(ind));
+    Sk(ind) = S0(ii) - (S0(ii)/(mu*lambda)) * (T0(ii) - Tk(ind));
     
-    Skm(ii,1) = sum(Sk(ind).*(TriArea(ind)./BoxArea));
-    Tkm(ii,1) = sum(Tk(ind).*(TriArea(ind)./BoxArea));
-% 
-%     Skm(ii,1) = mean(Sk(ind));
-%     Tkm(ii,1) = mean(Tk(ind));
+    Skm(ii,1) = mean(Sk(ind));
+    Tkm(ii,1) = mean(Tk(ind));
     
 end
 
@@ -194,23 +183,19 @@ q = C1*rhostar*(beta*(S0-Skm(:,1)) - alph*(T0-Tkm(:,1)));
 for ii = 1:max(ShelfID)
     for jj = 2:nmax
         
-        ind = ShelfID==ii & PBOX == jj;
-        ind1 = ShelfID==ii & PBOX == jj-1;
+        ind = ShelfID==ii & PBOX == jj;        
         
-        BoxArea = sum(TriArea(ind));
         
         Tstar = calc_tstar(Skm(ii,jj-1),Tkm(ii,jj-1),pk(ind)); % calculate with Sk and Tk of box-1 but using local pk
         
         Tk(ind) = Tkm(ii,jj-1) + (gk(ii,jj).*Tstar)./(q(ii) + gk(ii,jj) - gk2(ii,jj).*a1.*Skm(ii,jj-1));
-        Tkm(ii,jj) = sum(Tk(ind).*(TriArea(ind)./BoxArea));
-%         Tkm(ii,jj) = mean(Tk(ind));
-        Sk(ind) = Skm(ii,jj-1) + Skm(ii,jj-1).*(Tkm(ii,jj-1)-Tkm(ii,jj))./(mu(ii,jj)*lambda);
-        Skm(ii,jj) = sum(Sk(ind).*(TriArea(ind)./BoxArea));
-%         Skm(ii,jj) = mean(Sk(ind));
+        Tkm(ii,jj) = mean(Tk(ind));
+        Sk(ind) = Skm(ii,jj-1) - Skm(ii,jj-1).*(Tkm(ii,jj-1)-Tkm(ii,jj))./(mu*lambda);
+        Skm(ii,jj) = mean(Sk(ind));
     end
 end
 
-Mk_ms = (-gamTstar./(mu2*lambda)).*(a1.*Sk + b1 - c1.*pk - Tk);
+Mk_ms = (-gamTstar./(mu*lambda)).*(a1.*Sk + b1 - c1.*pk - Tk);
 Mk = Mk_ms .* 86400 .* 365.25;
 Mk(~floating) = 0;
 Mk(isnan(ShelfID) & floating) = PICO_opts.SmallShelfMelt;
