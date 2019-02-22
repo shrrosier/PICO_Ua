@@ -1,4 +1,4 @@
-function [Mk,ShelfID,T0,S0] = PICO_driver(CtrlVar,MUA,GF,b,rho,PICO_opts)
+function [Mk,ShelfID,T0,S0,Tk,Sk] = PICO_driver(CtrlVar,MUA,GF,b,rho,PICO_opts)
 %
 % PICO melt rate parameterisation v0.3
 % Outputs melt rate in units of metres per year
@@ -152,6 +152,9 @@ gk2 = gk./(mu*lambda);
 
 pcoeff = get_p(gk(:,1),s1);
 
+MUA2 = MUA;
+MUA2.nip = 1;
+TriArea = FEintegrate2D([],MUA2,ones(MUA.Nnodes,1));
 
 for ii = 1:max(ShelfID)
     
@@ -173,8 +176,14 @@ for ii = 1:max(ShelfID)
     
     Tk(ind) = T0(ii) - (-.5.*pcoeff(ii) + sqrt(DD(ind)));
     Sk(ind) = S0(ii) - (S0(ii)/(mu*lambda)) * (T0(ii) - Tk(ind));
-    Skm(ii,1) = mean(Sk(ind));
-    Tkm(ii,1) = mean(Tk(ind));
+
+    BoxArea = sum(TriArea(ind));
+    
+    Skm(ii,1) = sum(Sk(ind).*(TriArea(ind)./BoxArea));
+    Tkm(ii,1) = sum(Tk(ind).*(TriArea(ind)./BoxArea));
+% 
+%     Skm(ii,1) = mean(Sk(ind));
+%     Tkm(ii,1) = mean(Tk(ind));
     
 end
 
@@ -188,13 +197,16 @@ for ii = 1:max(ShelfID)
         ind = ShelfID==ii & PBOX == jj;
         ind1 = ShelfID==ii & PBOX == jj-1;
         
+        BoxArea = sum(TriArea(ind));
+        
         Tstar = calc_tstar(Skm(ii,jj-1),Tkm(ii,jj-1),pk(ind)); % calculate with Sk and Tk of box-1 but using local pk
         
         Tk(ind) = Tkm(ii,jj-1) + (gk(ii,jj).*Tstar)./(q(ii) + gk(ii,jj) - gk2(ii,jj).*a1.*Skm(ii,jj-1));
-        Tkm(ii,jj) = mean(Tk(ind));
+        Tkm(ii,jj) = sum(Tk(ind).*(TriArea(ind)./BoxArea));
+%         Tkm(ii,jj) = mean(Tk(ind));
         Sk(ind) = Skm(ii,jj-1) + Skm(ii,jj-1).*(Tkm(ii,jj-1)-Tkm(ii,jj))./(mu*lambda);
-        Skm(ii,jj) = mean(Sk(ind));
-        
+        Skm(ii,jj) = sum(Sk(ind).*(TriArea(ind)./BoxArea));
+%         Skm(ii,jj) = mean(Sk(ind));
     end
 end
 
