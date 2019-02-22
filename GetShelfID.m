@@ -49,7 +49,11 @@ if GF.node(nod_start) < 0.5 % now we have a problem - mesh boundary coordinates 
     % the mesh boundary coordinate intersection here where it will cause no
     % problems... maybe excessive but not too slow
     warning('Mesh boundary coordinates seem to intersect an ice shelf, rearranging start and end points...');
-    [~,~,~,ib,~]=DistanceCloudAtoCloudB(x,y,BCn(:,1),BCn(:,2));
+    ib = zeros(length(BCn),1);
+    for ii = 1:length(BCn)
+        dist =hypot(x-BCn(ii,1),y-BCn(ii,2));
+        ib(ii) = find(dist==0);
+    end
     GFboundary = GF.node(ib);
     GFchange = diff(GFboundary);
     GFbound_length = 0;
