@@ -98,7 +98,7 @@ switch PICO_opts.algorithm
             warning('Using default resolution, change this in PICO_opts.PICOres');
         end
         
-        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,PICO_opts.PICOres,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax);
+        [ShelfID,PBOX,Ak,floating,rho_m] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,rho,PICO_opts.PICOres,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax);
     case 'polygon'
         if ~isfield(PICO_opts,'MeshBoundaryCoordinates')
             error('PICO_opts.MeshBoundaryCoordinates must be defined for the polygon option');
@@ -129,8 +129,7 @@ gamTstar = PICO_opts.gamTstar;
 nmax = PICO_opts.nmax;
 
 % fix this... only need them for mu, calculate over each box?
-rhoi = 910;
-rhow = 1028;
+rhow = 1030;
 
 
 Sk = zeros(MUA.Nnodes,1);
@@ -140,7 +139,8 @@ Skm = zeros(max(ShelfID),nmax);
 Tstar = zeros(MUA.Nnodes,1);
 
 
-mu = rhoi/rhow;
+mu = rho_m./rhow;
+mu2 = rho./rhow;
 lambda = L/cp;
 s1 = S0./(mu*lambda);
 gk = Ak.*gamTstar;
@@ -175,7 +175,7 @@ for ii = 1:max(ShelfID)
     
     
     Tk(ind) = T0(ii) - (-.5.*pcoeff(ii) + sqrt(DD(ind)));
-    Sk(ind) = S0(ii) - (S0(ii)/(mu*lambda)) * (T0(ii) - Tk(ind));
+    Sk(ind) = S0(ii) - (S0(ii)/(mu(ii,1)*lambda)) * (T0(ii) - Tk(ind));
 
     BoxArea = sum(TriArea(ind));
     
@@ -204,13 +204,13 @@ for ii = 1:max(ShelfID)
         Tk(ind) = Tkm(ii,jj-1) + (gk(ii,jj).*Tstar)./(q(ii) + gk(ii,jj) - gk2(ii,jj).*a1.*Skm(ii,jj-1));
         Tkm(ii,jj) = sum(Tk(ind).*(TriArea(ind)./BoxArea));
 %         Tkm(ii,jj) = mean(Tk(ind));
-        Sk(ind) = Skm(ii,jj-1) + Skm(ii,jj-1).*(Tkm(ii,jj-1)-Tkm(ii,jj))./(mu*lambda);
+        Sk(ind) = Skm(ii,jj-1) + Skm(ii,jj-1).*(Tkm(ii,jj-1)-Tkm(ii,jj))./(mu(ii,jj)*lambda);
         Skm(ii,jj) = sum(Sk(ind).*(TriArea(ind)./BoxArea));
 %         Skm(ii,jj) = mean(Sk(ind));
     end
 end
 
-Mk_ms = (-gamTstar./(mu*lambda)).*(a1.*Sk + b1 - c1.*pk - Tk);
+Mk_ms = (-gamTstar./(mu2*lambda)).*(a1.*Sk + b1 - c1.*pk - Tk);
 Mk = Mk_ms .* 86400 .* 365.25;
 Mk(~floating) = 0;
 Mk(isnan(ShelfID) & floating) = PICO_opts.SmallShelfMelt;
