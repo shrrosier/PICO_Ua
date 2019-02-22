@@ -60,8 +60,8 @@ end
 
 %% THIS SECTION DETERMINES THE BOX AREAS
 
-PBoxEle=round(Nodes2EleMean(MUA.connectivity,blnkBox));
-ShelfIDEle = round(Nodes2EleMean(MUA.connectivity,ShelfID));
+PBoxEle=round(SNodes2EleMean(MUA.connectivity,blnkBox));
+ShelfIDEle = round(SNodes2EleMean(MUA.connectivity,ShelfID));
 [Areas,~,~,~]=TriAreaFE(MUA.coordinates,MUA.connectivity);
 
 % Each row of Ak is a unique shelf and each column is a box number within
