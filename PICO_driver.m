@@ -1,4 +1,4 @@
-function [Mk,ShelfID,T0,S0,Tkm,Skm,q] = PICO_driver(CtrlVar,MUA,GF,b,rhoi,PICO_opts)
+function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX] = PICO_driver(CtrlVar,MUA,GF,h,rhoi,PICO_opts)
 %
 % PICO melt rate parameterisation v0.4
 % Outputs melt rate in units of metres per year
@@ -13,7 +13,7 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q] = PICO_driver(CtrlVar,MUA,GF,b,rhoi,PICO_o
 %   CtrlVar: Control Variables (Ua structure)
 %   MUA: Mesh (Ua structure)
 %   GF: Grounded/floating mask (Ua structure)
-%   b: ice base (MUA.Nnodes x 1)
+%   h: ice thickness (MUA.Nnodes x 1)
 %   rho: ice density (MUA.Nnodes x 1)
 %   PICO_opts: structure containing various PICO options, listed below:
 %
@@ -143,11 +143,16 @@ mu = rho./rhow;
 lambda = L/cp;
 s1 = S0./(mu*lambda);
 gk = Ak.*gamTstar;
-pk = -b.*9.81.*rhoi;
+pk = h.*9.81.*rhoi; 
 gk2 = gk./(mu*lambda);
 
 
 % ========================= box 1 ===============================
+
+%PBoxEle=ceil(SNodes2EleMean(MUA.connectivity,PBOX));
+%ShelfIDEle = round(SNodes2EleMean(MUA.connectivity,ShelfID));
+%[Areas,~,~,~]=TriAreaFE(MUA.coordinates,MUA.connectivity);
+
 
 pcoeff = get_p(gk(:,1),s1);
 
@@ -172,8 +177,14 @@ for ii = 1:max(ShelfID)
     Tk(ind) = T0(ii) - (-.5.*pcoeff(ii) + sqrt(DD(ind)));
     Sk(ind) = S0(ii) - (S0(ii)/(mu*lambda)) * (T0(ii) - Tk(ind));
     
-    Skm(ii,1) = mean(Sk(ind));
-    Tkm(ii,1) = mean(Tk(ind));
+    % FIXME: I think that the calculation of the average input for the next
+    % box might be the difference. 
+    Skm(ii,1) = mean(Sk(ind)); % FIXME shouldn't this be a spatially-weighted average?
+    %IntS=FEintegrate2D([],MUA,Sk);
+    %Skm(ii,1) = sum(IntS(ShelfIDEle==ii & PBoxEle==1))/sum(Areas(ShelfIDEle==ii & PBoxEle==1));
+    Tkm(ii,1) = mean(Tk(ind)); % FIXME shouldn't this be a spatially-weighted average    
+    %IntT=FEintegrate2D([],MUA,Tk);
+    %Tkm(ii,1) = sum(IntT(ShelfIDEle==ii & PBoxEle==1))/sum(Areas(ShelfIDEle==ii & PBoxEle==1)); % FIXME shouldn't this be a spatially-weighted average
     
 end
 
@@ -190,14 +201,20 @@ for ii = 1:max(ShelfID)
         Tstar = calc_tstar(Skm(ii,jj-1),Tkm(ii,jj-1),pk(ind)); % calculate with Sk and Tk of box-1 but using local pk
         
         Tk(ind) = Tkm(ii,jj-1) + (gk(ii,jj).*Tstar)./(q(ii) + gk(ii,jj) - gk2(ii,jj).*a1.*Skm(ii,jj-1));
-        Tkm(ii,jj) = mean(Tk(ind));
+        Tkm(ii,jj) = mean(Tk(ind)); % FIXME shouldn't this be a spatially-weighted average
         Sk(ind) = Skm(ii,jj-1) - Skm(ii,jj-1).*(Tkm(ii,jj-1)-Tkm(ii,jj))./(mu*lambda);
-        Skm(ii,jj) = mean(Sk(ind));
+        Skm(ii,jj) = mean(Sk(ind)); % FIXME shouldn't this be a spatially-weighted average
+        
+        %IntS=FEintegrate2D([],MUA,Sk);
+        %Skm(ii,jj) = sum(IntS(ShelfIDEle==ii & PBoxEle==jj))/sum(Areas(ShelfIDEle==ii & PBoxEle==jj));        
+        %IntT=FEintegrate2D([],MUA,Tk);
+        %Tkm(ii,jj) = sum(IntT(ShelfIDEle==ii & PBoxEle==jj))/sum(Areas(ShelfIDEle==ii & PBoxEle==jj));
+        
     end
 end
 
-Mk_ms = (-gamTstar./(mu*lambda)).*(a1.*Sk + b1 - c1.*pk - Tk);
-Mk = Mk_ms .* 86400 .* 365.25;
+Mk_ms = (-gamTstar./(mu*lambda)).*(a1.*Sk + b1 - c1.*pk - Tk); % m per s
+Mk = Mk_ms .* 86400 .* 365.25; % m per a
 Mk(~floating) = 0;
 Mk(isnan(ShelfID) & floating) = PICO_opts.SmallShelfMelt;
 
