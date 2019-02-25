@@ -156,11 +156,11 @@ for ii = 1:max(ShelfID)
     ind = ShelfID==ii & PBOX == 1;
     
     Tstar(ind) = calc_tstar(S0(ii),T0(ii),pk(ind));
-    if any(Tstar > 0) % equivalent to: if T0 < T_pmp
+    if any(Tstar(ind) > 0) % equivalent to: if T0 < T_pmp
+        % ensure that temperature input to box 1 is at least at pressure melting point
+        J = Tstar > 0 & ind;
         T_pmp = Tstar+T0(ii);
-         % ensure that temperature input to box 1 at least at pressure melting point
-         T0(ii) = max(T_pmp(ind)+0.001,T0(ii));
-        Tstar(ind) = calc_tstar(S0(ii),T0(ii),pk(ind));
+        Tstar(J) = calc_tstar(S0(ii),T_pmp(J)+0.001,pk(J));
     end
     q1 = pcoeff(ii).*Tstar;
     
