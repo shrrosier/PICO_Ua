@@ -1,4 +1,4 @@
-function [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,minArea,minNumS,nmax,MeshBoundaryCoordinates)
+function [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,minArea,minNumS,nmax,MeshBoundaryCoordinates,FloatingCriteria)
 
 %load('Schmitko.mat');
 %load('MeshBoundaryCoordinates.mat');
@@ -77,12 +77,13 @@ end
 PBOX = blnkBox;
 PBOX(PBOX==0) = nan;
 
-[GF,~,~,~]=IceSheetIceShelves(CtrlVar,MUA,GF,[],[],[]);
-if strcmp(PICO_opts.FloatingCriteria,'GLthreshold')
+switch FloatingCriteria
+    case 'GLthreshold'
     floating = GF.node < CtrlVar.GLthreshold;
-elseif strcmp(PICO_opts.FloatingCriteria,'StrictDownstream')
+    case 'StrictDownstream'
+    GF=IceSheetIceShelves(CtrlVar,MUA,GF,[],[],[]);
     floating = GF.NodesDownstreamOfGroundingLines;
-else 
+    otherwise
     error('Invalid value for PICO_opts.FloatingCriteria');
 end
 

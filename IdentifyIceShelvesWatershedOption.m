@@ -1,4 +1,4 @@
-function [ShelfNum,BoxID,Ak,floating] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,PICOres,minArea,minNumS,nmax)
+function [ShelfNum,BoxID,Ak,floating] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,PICOres,minArea,minNumS,nmax,FloatingCriteria)
 %
 % Function to generate unique shelf IDs with corresponding areas,
 % subdivided into boxes using the method described in Reese (2018).
@@ -36,12 +36,13 @@ end
 % then make all nodes of that triangle belong to the same ice shelf (this
 % will hopefully deal with some edge issues
 
-[GF,~,GLnodes,~]=IceSheetIceShelves(CtrlVar,MUA,GF,[],[],[]);
-if strcmp(PICO_opts.FloatingCriteria,'GLthreshold')
+switch FloatingCriteria
+    case 'GLthreshold'
     floating = GF.node < CtrlVar.GLthreshold;
-elseif strcmp(PICO_opts.FloatingCriteria,'StrictDownstream')
+    case 'StrictDownstream'
+    GF=IceSheetIceShelves(CtrlVar,MUA,GF,[],[],[]);
     floating = GF.NodesDownstreamOfGroundingLines;
-else 
+    otherwise
     error('Invalid value for PICO_opts.FloatingCriteria');
 end
 ShelfID(~floating) = -1;

@@ -14,14 +14,14 @@ y = MUA.coordinates(:,2);
 %%
 % Run PICO:
 PICO_opts = struct;
-PICO_opts.algorithm = 'watershed';%'polygon'; %'watershed';
+PICO_opts.algorithm = 'polygon';%'polygon'; %'watershed';
 PICO_opts.C1 = 1e6;
 PICO_opts.gamTstar = 2e-5;
 PICO_opts.nmax = 5;
 PICO_opts.SmallShelfMelt = 0;
 PICO_opts.PICOres = 6000;
 PICO_opts.BasinsFile = 'BasinsInterpolant.mat';
-PICO_opts.FloatingCriteria = 'GLthreshold'; % or 'StrictDownstream'
+PICO_opts.FloatingCriteria = 'GLthreshold'; %'GLthreshold' or 'StrictDownstream'
 
 PICO_opts.Sbasins = [34.6505; 34.5273; 34.3222; 34.3259; 34.3297; 34.5315; 34.4819; 34.5666; 34.5766; 34.6677; 34.7822; 34.6254; 34.4107; 34.5526; 34.6902; 34.6668; 34.5339; 34.5849; 34.6644];
 PICO_opts.Tbasins = [-1.76;-1.66;-1.65;-1.58;-1.51;-1.73;-1.68;-0.73;-1.61;-1.30;-1.83;-1.58;-0.36;0.47;1.04;1.17;0.23;-1.23;-1.80];

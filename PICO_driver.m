@@ -101,12 +101,12 @@ switch PICO_opts.algorithm
             warning('Using default resolution, change this in PICO_opts.PICOres');
         end
         
-        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,PICO_opts.PICOres,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax);
+        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,PICO_opts.PICOres,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax,PICO_opts.FloatingCriteria);
     case 'polygon'
         if ~isfield(PICO_opts,'MeshBoundaryCoordinates')
             error('PICO_opts.MeshBoundaryCoordinates must be defined for the polygon option');
         end
-        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax,PICO_opts.MeshBoundaryCoordinates);
+        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax,PICO_opts.MeshBoundaryCoordinates,PICO_opts.FloatingCriteria);
     otherwise
         error('Invalid algorithm, choose either "watershed" or "polygon"');
 end
