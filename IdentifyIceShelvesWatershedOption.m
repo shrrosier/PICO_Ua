@@ -37,7 +37,13 @@ end
 % will hopefully deal with some edge issues
 
 [GF,~,GLnodes,~]=IceSheetIceShelves(CtrlVar,MUA,GF,[],[],[]);
-floating = GF.NodesDownstreamOfGroundingLines;
+if strcmp(PICO_opts.FloatingCriteria,'GLthreshold')
+    floating = GF.node < CtrlVar.GLthreshold;
+elseif strcmp(PICO_opts.FloatingCriteria,'StrictDownstream')
+    floating = GF.NodesDownstreamOfGroundingLines;
+else 
+    error('Invalid value for PICO_opts.FloatingCriteria');
+end
 ShelfID(~floating) = -1;
 
 %% this section roughly calculates the area of each ice shelf and removes ice shelves below some minimum area

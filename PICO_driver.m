@@ -42,6 +42,9 @@ end
 if ~isfield(PICO_opts,'algorithm')
     PICO_opts.algorithm = 'watershed';
 end
+if ~isfield(PICO_opts,'FloatingCriteria')
+    PICO_opts.FloatingCriteria = 'GLthreshold';
+end
 if ~isfield(PICO_opts,'C1')
     PICO_opts.C1 = 1e6;
 end

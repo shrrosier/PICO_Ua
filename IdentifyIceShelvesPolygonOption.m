@@ -78,4 +78,12 @@ PBOX = blnkBox;
 PBOX(PBOX==0) = nan;
 
 [GF,~,~,~]=IceSheetIceShelves(CtrlVar,MUA,GF,[],[],[]);
-floating = GF.NodesDownstreamOfGroundingLines;
+if strcmp(PICO_opts.FloatingCriteria,'GLthreshold')
+    floating = GF.node < CtrlVar.GLthreshold;
+elseif strcmp(PICO_opts.FloatingCriteria,'StrictDownstream')
+    floating = GF.NodesDownstreamOfGroundingLines;
+else 
+    error('Invalid value for PICO_opts.FloatingCriteria');
+end
+
+end
