@@ -29,7 +29,7 @@ PICO_opts.MeshBoundaryCoordinates = MeshBoundaryCoordinates;
 
 tic
 
-[Mk,ShelfID,T0,S0,Tk,Sk,q] = PICO_driver(CtrlVarInRestartFile,MUA,GF,F.b,F.rho, PICO_opts);
+[Mk,ShelfID,T0,S0,Tk,Sk,q] = PICO_driver(CtrlVarInRestartFile,MUA,GF,F.h,F.rho, PICO_opts);
 
 toc
 
