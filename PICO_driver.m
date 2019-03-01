@@ -20,6 +20,7 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX] = PICO_driver(CtrlVar,MUA,GF,h,rhoi,P
 %   - algorithm: either 'watershed' or 'polygon'
 %   - PICOres: Resolution to use when searching for ice shelves i.e. 10000
 %   (only used in watershed algorithm)
+%   - FloatingCriteria: either 'GLthreshold' or 'StrictDownstream'
 %   - SmallShelfMelt: melt to floating regions not included in PICO boxes i.e. 0
 %   - nmax: maximum number of PICO boxes (optional, default = 5)
 %   - minArea: minimum area for an ice shelf to be defined in PICO
@@ -146,7 +147,7 @@ mu = rho./rhow;
 lambda = L/cp;
 s1 = S0./(mu*lambda);
 gk = Ak.*gamTstar;
-pk = h.*9.81.*rhoi; 
+pk = h.*9.81.*rhoi;
 gk2 = gk./(mu*lambda);
 
 
@@ -155,6 +156,8 @@ gk2 = gk./(mu*lambda);
 %PBoxEle=ceil(SNodes2EleMean(MUA.connectivity,PBOX));
 %ShelfIDEle = round(SNodes2EleMean(MUA.connectivity,ShelfID));
 %[Areas,~,~,~]=TriAreaFE(MUA.coordinates,MUA.connectivity);
+
+Areas=TriAreaFE(MUA.coordinates,MUA.connectivity);
 
 
 pcoeff = get_p(gk(:,1),s1);
@@ -181,11 +184,14 @@ for ii = 1:max(ShelfID)
     Sk(ind) = S0(ii) - (S0(ii)/(mu*lambda)) * (T0(ii) - Tk(ind));
     
     % FIXME: I think that the calculation of the average input for the next
-    % box might be the difference. 
-    Skm(ii,1) = mean(Sk(ind)); % FIXME shouldn't this be a spatially-weighted average?
+    % box might be the difference.
+    %   Skm(ii,1) = mean(Sk(ind)); % FIXME shouldn't this be a spatially-weighted average?
+    Skm(ii,1) =  PBoxAverage(MUA,ind,Areas,Sk);
     %IntS=FEintegrate2D([],MUA,Sk);
     %Skm(ii,1) = sum(IntS(ShelfIDEle==ii & PBoxEle==1))/sum(Areas(ShelfIDEle==ii & PBoxEle==1));
-    Tkm(ii,1) = mean(Tk(ind)); % FIXME shouldn't this be a spatially-weighted average    
+    %    Tkm(ii,1) = mean(Tk(ind)); % FIXME shouldn't this be a spatially-weighted average
+    Tkm(ii,1) =  PBoxAverage(MUA,ind,Areas,Tk);
+    
     %IntT=FEintegrate2D([],MUA,Tk);
     %Tkm(ii,1) = sum(IntT(ShelfIDEle==ii & PBoxEle==1))/sum(Areas(ShelfIDEle==ii & PBoxEle==1)); % FIXME shouldn't this be a spatially-weighted average
     
@@ -198,18 +204,25 @@ q = C1*rhostar*(beta*(S0-Skm(:,1)) - alph*(T0-Tkm(:,1)));
 for ii = 1:max(ShelfID)
     for jj = 2:nmax
         
-        ind = ShelfID==ii & PBOX == jj;        
+        if Ak(ii,jj) == 0
+            continue
+        end
+        
+        ind = ShelfID==ii & PBOX == jj;
         
         
         Tstar = calc_tstar(Skm(ii,jj-1),Tkm(ii,jj-1),pk(ind)); % calculate with Sk and Tk of box-1 but using local pk
         
         Tk(ind) = Tkm(ii,jj-1) + (gk(ii,jj).*Tstar)./(q(ii) + gk(ii,jj) - gk2(ii,jj).*a1.*Skm(ii,jj-1));
-        Tkm(ii,jj) = mean(Tk(ind)); % FIXME shouldn't this be a spatially-weighted average
+        %     Tkm(ii,jj) = mean(Tk(ind)); % FIXME shouldn't this be a spatially-weighted average
+        Tkm(ii,jj) =  PBoxAverage(MUA,ind,Areas,Tk);
+        
         Sk(ind) = Skm(ii,jj-1) - Skm(ii,jj-1).*(Tkm(ii,jj-1)-Tkm(ii,jj))./(mu*lambda);
-        Skm(ii,jj) = mean(Sk(ind)); % FIXME shouldn't this be a spatially-weighted average
+        %Skm(ii,jj) = mean(Sk(ind)); % FIXME shouldn't this be a spatially-weighted average
+        Skm(ii,jj) =  PBoxAverage(MUA,ind,Areas,Sk);
         
         %IntS=FEintegrate2D([],MUA,Sk);
-        %Skm(ii,jj) = sum(IntS(ShelfIDEle==ii & PBoxEle==jj))/sum(Areas(ShelfIDEle==ii & PBoxEle==jj));        
+        %Skm(ii,jj) = sum(IntS(ShelfIDEle==ii & PBoxEle==jj))/sum(Areas(ShelfIDEle==ii & PBoxEle==jj));
         %IntT=FEintegrate2D([],MUA,Tk);
         %Tkm(ii,jj) = sum(IntT(ShelfIDEle==ii & PBoxEle==jj))/sum(Areas(ShelfIDEle==ii & PBoxEle==jj));
         

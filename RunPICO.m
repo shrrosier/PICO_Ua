@@ -59,8 +59,8 @@ PlotGroundingLines(CtrlVarInRestartFile, MUA, GF); PlotBoundary(MUA.Boundary,MUA
 
 %% aggregate melt rates over the ice shelves (first guess, ignore the area of the elements)
 
-ShelfID_per_ele = mean(ShelfID(MUA.connectivity),2);
-Int=FEintegrate2D([],MUA,Mk); % integarte melt rate over elements
+ShelfID_per_ele = nanmean(ShelfID(MUA.connectivity),2);
+Int=FEintegrate2D([],MUA,Mk); % integrate melt rate over elements
 Areas = TriAreaFE(MUA.coordinates,MUA.connectivity); % get the area of each triangle
 
 % FIXME: not aggregated per region!!
