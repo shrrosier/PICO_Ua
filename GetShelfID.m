@@ -185,6 +185,10 @@ for ii =1:numel(GL_ind)-1 % loop through every GL polyline
 
 end
 
+if shelfnum==1
+    error('No valid ice shelves detected - check shelf size and shelf area cutoffs are sensible for your domain');
+end
+
 % this section sorts all the identified ice shelves by area (not
 % necessarily already the case - previously sorted by number of GL 
 % vertices). We need to do this to help with the check for nested ice
