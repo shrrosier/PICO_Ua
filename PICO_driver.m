@@ -158,6 +158,20 @@ gk2 = gk./(mu*lambda);
 %[Areas,~,~,~]=TriAreaFE(MUA.coordinates,MUA.connectivity);
 
 Areas=TriAreaFE(MUA.coordinates,MUA.connectivity);
+ShelfIDEle = nanmean(ShelfID(MUA.connectivity),2);
+
+
+% ------------------------------
+% pctBox and mskBox are needed
+% for averaging values in boxes
+for ii = 1:nmax
+    Nind = PBOX ==ii;
+    msk = double(Nind(MUA.connectivity));
+    pctBox{ii} = sum(msk,2)./3;
+    msk(msk==0) = nan;
+    mskBox{ii} = msk;
+end
+% ------------------------------
 
 
 pcoeff = get_p(gk(:,1),s1);
@@ -165,6 +179,13 @@ pcoeff = get_p(gk(:,1),s1);
 for ii = 1:max(ShelfID)
     
     ind = ShelfID==ii & PBOX == 1;
+    indE = ShelfIDEle==ii;
+    
+    pb = pctBox{1}(indE);
+    mb = mskBox{1}(indE,:);
+    ar = Areas(indE);
+    BA = sum(pb.*ar);
+
     
     Tstar(ind) = calc_tstar(S0(ii),T0(ii),pk(ind));
     if any(Tstar(ind) > 0) % equivalent to: if T0 < T_pmp
@@ -186,11 +207,17 @@ for ii = 1:max(ShelfID)
     % FIXME: I think that the calculation of the average input for the next
     % box might be the difference.
     %   Skm(ii,1) = mean(Sk(ind)); % FIXME shouldn't this be a spatially-weighted average?
-    Skm(ii,1) =  PBoxAverage(MUA,ind,Areas,Sk);
+    
+    vals = nanmean(mskBox{1}.*Sk(MUA.connectivity),2);
+    Skm(ii,1) = nansum(vals(indE).*ar.*pb)./BA;
+    
+%     Skm(ii,1) =  PBoxAverage(MUA,ind,Areas,Sk);
+
     %IntS=FEintegrate2D([],MUA,Sk);
     %Skm(ii,1) = sum(IntS(ShelfIDEle==ii & PBoxEle==1))/sum(Areas(ShelfIDEle==ii & PBoxEle==1));
     %    Tkm(ii,1) = mean(Tk(ind)); % FIXME shouldn't this be a spatially-weighted average
-    Tkm(ii,1) =  PBoxAverage(MUA,ind,Areas,Tk);
+    vals = nanmean(mskBox{1}.*Tk(MUA.connectivity),2);
+    Tkm(ii,1) = nansum(vals(indE).*ar.*pb)./BA;
     
     %IntT=FEintegrate2D([],MUA,Tk);
     %Tkm(ii,1) = sum(IntT(ShelfIDEle==ii & PBoxEle==1))/sum(Areas(ShelfIDEle==ii & PBoxEle==1)); % FIXME shouldn't this be a spatially-weighted average
@@ -202,6 +229,10 @@ q = C1*rhostar*(beta*(S0-Skm(:,1)) - alph*(T0-Tkm(:,1)));
 % ========================= box k ===============================
 
 for ii = 1:max(ShelfID)
+    
+    indE = ShelfIDEle==ii;
+    ar = Areas(indE);
+    
     for jj = 2:nmax
         
         if Ak(ii,jj) == 0
@@ -210,16 +241,26 @@ for ii = 1:max(ShelfID)
         
         ind = ShelfID==ii & PBOX == jj;
         
+        pb = pctBox{jj}(indE);
+        mb = mskBox{jj}(indE,:);
+        BA = sum(pb.*ar);
         
         Tstar = calc_tstar(Skm(ii,jj-1),Tkm(ii,jj-1),pk(ind)); % calculate with Sk and Tk of box-1 but using local pk
         
         Tk(ind) = Tkm(ii,jj-1) + (gk(ii,jj).*Tstar)./(q(ii) + gk(ii,jj) - gk2(ii,jj).*a1.*Skm(ii,jj-1));
         %     Tkm(ii,jj) = mean(Tk(ind)); % FIXME shouldn't this be a spatially-weighted average
-        Tkm(ii,jj) =  PBoxAverage(MUA,ind,Areas,Tk);
+        vals = nanmean(mskBox{jj}.*Tk(MUA.connectivity),2);
+        Tkm(ii,jj) = nansum(vals(indE).*ar.*pb)./BA;
+        
+%         Tkm(ii,jj) =  PBoxAverage(MUA,ind,Areas,Tk);
         
         Sk(ind) = Skm(ii,jj-1) - Skm(ii,jj-1).*(Tkm(ii,jj-1)-Tkm(ii,jj))./(mu*lambda);
         %Skm(ii,jj) = mean(Sk(ind)); % FIXME shouldn't this be a spatially-weighted average
-        Skm(ii,jj) =  PBoxAverage(MUA,ind,Areas,Sk);
+        
+        vals = nanmean(mskBox{jj}.*Sk(MUA.connectivity),2);
+        Skm(ii,jj) = nansum(vals(indE).*ar.*pb)./BA;
+        
+%         Skm(ii,jj) =  PBoxAverage(MUA,ind,Areas,Sk);
         
         %IntS=FEintegrate2D([],MUA,Sk);
         %Skm(ii,jj) = sum(IntS(ShelfIDEle==ii & PBoxEle==jj))/sum(Areas(ShelfIDEle==ii & PBoxEle==jj));
