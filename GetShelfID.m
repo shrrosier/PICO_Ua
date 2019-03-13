@@ -35,7 +35,11 @@ y = MUA.coordinates(:,2);
 [xGL,yGL] = ArrangeGroundingLinePos(CtrlVar,GLgeo);
 
 % create index of where this vector starts a new GL
-GL_ind = [0; find(isnan(xGL))];
+if any(isnan(xGL))
+    GL_ind = [0; find(isnan(xGL))];
+else
+    GL_ind = [0; numel(xGL)];
+end
 
 % if isempty(BCn)
     BCn = MeshBoundaryCoordinates;
