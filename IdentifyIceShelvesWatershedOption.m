@@ -64,6 +64,12 @@ unShelfID(unShelfID<2) = nan;
 unShelfID = unShelfID-1;
 ShelfNum = unShelfID;
 
+
+if max(ShelfID)==-1
+    error('No valid ice shelves detected - check shelf size and shelf area cutoffs are sensible for your domain');
+end
+
+
 %% this section calculates distances from GLs and ice fronts for each shelf
 FloatingBoundaryNodes=MUA.Boundary.Nodes(GF.node(MUA.Boundary.Nodes)<0.5);
 dIF = unShelfID*0;
