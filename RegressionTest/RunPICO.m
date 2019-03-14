@@ -31,22 +31,40 @@ PICO_opts.Sbasins = 34.5;
 load('MeshBoundaryCoordinates.mat');
 PICO_opts.MeshBoundaryCoordinates = MeshBoundaryCoordinates;
 
-tic
+%tic
 
-[Mk,ShelfID,T0,S0,] = PICO_driver(CtrlVar,MUA,GF,F.b,median(F.rho), PICO_opts);
+[Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX] = PICO_driver(CtrlVar, MUA, GF, F.h, median(F.rho), PICO_opts);
 
-toc
-
+%toc
 
 % Infos from profiling: 
 % Running "watershed", res 1000: 
 % Running "watershed", res 3000: 
 % Running "watershed", res 6000: 
 % Running 
+%%
 
-
+Tkm
+Skm
+q
+median(Mk(PBOX==1))
 %% Create figures:
 
+figure;
+PlotMeshScalarVariable(CtrlVar, MUA, PBOX)
+
+
+%% Old:
+
+%% Calculate area of boxes -> are they equal?
+
+
+%% 
+
+
+
+
+%% log melting
 decimals = 2; % number of decimal places that should be displayed +1
 
 Mk_log = sign(Mk).*log10(abs(Mk)*10^decimals);

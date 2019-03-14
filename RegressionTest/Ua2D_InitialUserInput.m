@@ -8,7 +8,7 @@ CtrlVar.Experiment='RegressionTest';
 CtrlVar.doplots=0; CtrlVar.doRemeshPlots=0;
 UserVar.OutputsDir = 'ResultsFiles';
 
-xd=50e3; xu=-10e3 ; yl=5e3 ; yr=-5e3; % 10km wide
+xd=600e3; xu=0e3 ; yl=600e3 ; yr=-600e3; % 12km wide
 MeshBoundaryCoordinates=flipud([xu yr ; xd yr ; xd yl ; xu yl]);
 
 save MeshBoundaryCoordinates.mat MeshBoundaryCoordinates;
@@ -59,10 +59,10 @@ CtrlVar.ReadInitialMesh=0;    % if true then read FE mesh (coordinates, connecti
 CtrlVar.ReadInitialMeshFileName='NewMeshFile.mat';
 
 CtrlVar.TriNodes=3 ;
-CtrlVar.MeshSize=1e3; %
-CtrlVar.MeshSizeMin=0.1;% 
+CtrlVar.MeshSize=7e3; %
+CtrlVar.MeshSizeMin=7e3;% 
 CtrlVar.MeshSizeMax=CtrlVar.MeshSize;
-CtrlVar.MaxNumberOfElements=500000; %
+CtrlVar.MaxNumberOfElements=10000; %
 
 %% for adaptive meshing
 CtrlVar.MeshGenerator='mesh2d';  % possible values: {mesh2d|gmsh}
