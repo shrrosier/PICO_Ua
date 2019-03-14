@@ -93,7 +93,7 @@ for ii = 1:max(ShelfNum) % calculate dGL and dIF for each ice shelf
     % advantage of removing islands within an ice shelf
     
     k = boundary(xBox,yBox,1);
-    te=setdiff(k,find(D==0));
+    te=setdiff(k,find(D==0)); % instead of this... ensure node is not part of the same element as a node on the boundary
     [~, D2] = knnsearch([xBox(te) yBox(te)],[xBox yBox]); % distance of every shelf node to GL
     dGL(ShelfNum==ii) = D2;
     
