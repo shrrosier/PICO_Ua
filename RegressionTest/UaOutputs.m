@@ -60,7 +60,7 @@ if ~isempty(strfind(plots,'-dhdt(x)-'))
     plot(x(I)/CtrlVar.PlotXYscale,dhdt(I)) ;
     title(sprintf('dhdt(x) at t=%-g ',time)) ; xlabel('x') ; ylabel('dh/dt')
     %drawnow
-    export_fig(strcat('./Outputs/', 'dhdt_at_time', num2str(time)), '-r400');
+    %export_fig(strcat('./Outputs/', 'dhdt_at_time', num2str(time)), '-r400');
 end
 
 
@@ -124,7 +124,7 @@ if ~isempty(strfind(plots,'-ubvb-'))
     hold on
     title(sprintf('(ub,vb) t=%-g ',time)) ; xlabel('xps (km)') ; ylabel('yps (km)')
     axis equal tight
-    export_fig(strcat('./Outputs/', 'ubvb_at_time', num2str(time)), '-r400');
+    %export_fig(strcat('./Outputs/', 'ubvb_at_time', num2str(time)), '-r400');
     
 end
 
@@ -152,7 +152,7 @@ if ~isempty(strfind(plots,'-e-'))
     figure
     [FigHandle,ColorbarHandel,tri]=PlotNodalBasedQuantities(MUA.connectivity,MUA.coordinates,eNod,CtrlVar)    ;
     title(sprintf('e t=%-g ',time)) ; xlabel('x (km)') ; ylabel('y (km)')
-    export_fig(strcat('./Outputs/', 'strainrates_at_time', num2str(time)), '-r400');
+    %export_fig(strcat('./Outputs/', 'strainrates_at_time', num2str(time)), '-r400');
     
 end
 
@@ -173,7 +173,7 @@ if ~isempty(strfind(plots,'-mua-'))
     [xGL,yGL,GLgeo]=PlotGroundingLines(CtrlVar,MUA,GF,[],[],[],'r','LineWidth',2);
     title(sprintf('t=%g',time))
     hold off
-    export_fig(strcat('./Outputs/', 'MUA_at_time', num2str(time)), '-r400');
+    %export_fig(strcat('./Outputs/', 'MUA_at_time', num2str(time)), '-r400');
 end
 
 
