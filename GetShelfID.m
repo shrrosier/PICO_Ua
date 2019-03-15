@@ -22,7 +22,6 @@ function [ShelfID,ShelfGLx2,ShelfGLy2,ShelfFrontx2,ShelfFronty2] = GetShelfID(Ct
 %==========================================================================
 % TUNING PARAMETERS:
 GL_cutoff = 0; % if a GL polyline is shorter than this length, ignore it NB: runtime sensitive to this number, 0 will give best behaviour but larger number will make it considerably faster
-dist_tol = 10e3; % if a node at the end of a GL polyline is further than this distance from the boundary then it is not regarded as an ice shelf (NOTE: a very coarse mesh boundary might cause problems here)
 % shelf_area_cutoff = 1e9; % if a shelf area is less than this, ignore it
 % shelf_size_cutoff = 20; % if a shelf has less floating nodes than this number, ignore it (NOTE: if this is set to zero then grounded islands touching the boundary will be included in the result!!)
 %==========================================================================
@@ -46,7 +45,7 @@ end
 % end
 dxs = x - BCn(1,1); dys = y - BCn(1,2);
 ds = hypot(dxs,dys); [~,nod_start] = min(ds); % find index of node at start of MeshBoundaryCoords to check if it's floating
-
+I =  GF.node < CtrlVar.GLthreshold;
 
 if GF.node(nod_start) < 0.5 % now we have a problem - mesh boundary coordinates intersect a shelf
     % the aim here is to find the longest stretch of grounded nodes and put
@@ -90,13 +89,14 @@ ShelfID = zeros(MUA.Nnodes,1)*nan;
 shelfnum = 1; 
 
 % calculate total area of the domain
-domain_area = polyarea(BCn(:,1),BCn(:,2));
+% domain_area = polyarea(BCn(:,1),BCn(:,2));
 
 % calculate length (number of nodes) of each GL polyline
 GL_length = diff(GL_ind);
 
 
 num_GL_ignore = 0;
+num_lake_ignore = 0;
 num_ShelfArea_ignore = 0;
 num_ShelfSize_ignore = 0;
 
@@ -112,17 +112,27 @@ for ii =1:numel(GL_ind)-1 % loop through every GL polyline
         num_GL_ignore = num_GL_ignore + 1;
         continue
     end
-    
-    % find the nearest node to start and end of mesh boundary coords
-    dxs = xGL(GL_ind(ii)+1)-BCn(:,1); dys = yGL(GL_ind(ii)+1)-BCn(:,2);
-    ds = hypot(dxs,dys); [dsmin,nod_start] = min(ds);
-    dxe = xGL(GL_ind(ii+1)-1)-BCn(:,1); dye = yGL(GL_ind(ii+1)-1)-BCn(:,2);
-    de = hypot(dxe,dye); [demin,nod_end] = min(de);
-    
-    if demin > dist_tol || dsmin > dist_tol % if the start/end nodes are far from the boundary, these cannot be ice shelves so move on
+
+    % this checks if the GL polyline defines a lake (faster than LakeOrOcean.m)
+    % if it is then move on to the next grounding line
+    IN = 0;
+    if xGL(GL_ind(ii)+1)-xGL(GL_ind(ii+1)-1) == 0
+        if yGL(GL_ind(ii)+1)-yGL(GL_ind(ii+1)-1) == 0 % start and end point are the same... ie. this is an enclosed GL polygon... so is it a lake or island?
+            % if the GL polygon encloses floating nodes, it must be a lake
+            IN = inpoly([x(I) y(I)],[xGL(GL_ind(ii)+1:GL_ind(ii+1)-1) yGL(GL_ind(ii)+1:GL_ind(ii+1)-1)],[],1);
+        end
+    end
+    if sum(IN) > 0 % if lake
+        num_lake_ignore = num_lake_ignore + 1;
         continue
     end
-    
+
+    % find the nearest node to start and end of mesh boundary coords
+    dxs = xGL(GL_ind(ii)+1)-BCn(:,1); dys = yGL(GL_ind(ii)+1)-BCn(:,2);
+    ds = hypot(dxs,dys); [~,nod_start] = min(ds);
+    dxe = xGL(GL_ind(ii+1)-1)-BCn(:,1); dye = yGL(GL_ind(ii+1)-1)-BCn(:,2);
+    de = hypot(dxe,dye); [~,nod_end] = min(de);
+
     % generate xvec, yvec which define the boundary of the a polygon formed
     % from the GL polyline and mesh boundary polyline
     
@@ -254,4 +264,5 @@ ShelfFronty2(badShelf) = [];
 disp(['Ignored ' num2str(num_GL_ignore) ' ice shelves due to GL length cutoff criteria of ' num2str(GL_cutoff)]);
 disp(['Ignored ' num2str(num_ShelfArea_ignore) ' ice shelves due to shelf area cutoff criteria of ' num2str(shelf_area_cutoff)]);
 disp(['Ignored ' num2str(num_ShelfSize_ignore) ' ice shelves due to shelf size cutoff criteria of ' num2str(shelf_size_cutoff)]);
+disp(['Ignored ' num2str(num_lake_ignore) ' lakes (floating nodes fully enclosed by a GL)']);
 
