@@ -21,9 +21,10 @@ function [ShelfNum,BoxID,Ak,floating] = IdentifyIceShelvesWatershedOption(CtrlVa
 [~,~,Zi,in] = tri2grid(MUA,GF.node,PICOres);
 
 notshelf = Zi>0.99 | ~in;
-% ws = watershed(notshelf);
+% ws = watershed(notshelf); %bwlabel seems to do a better and MUCH faster job
 inshelf = ~notshelf;
 ws = bwlabel(inshelf,8);
+% CC = bwconncomp(inshelf,8); ws = labelmatrix(CC);  this seems to be slower
 x = MUA.coordinates(:,1); y= MUA.coordinates(:,2);
 
 x2 = floor((x-min(x))./PICOres) + 1;
