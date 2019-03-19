@@ -21,7 +21,9 @@ function [ShelfNum,BoxID,Ak,floating] = IdentifyIceShelvesWatershedOption(CtrlVa
 [~,~,Zi,in] = tri2grid(MUA,GF.node,PICOres);
 
 notshelf = Zi>0.99 | ~in;
-ws = watershed(notshelf);
+% ws = watershed(notshelf);
+inshelf = ~notshelf;
+ws = bwlabel(inshelf,8);
 x = MUA.coordinates(:,1); y= MUA.coordinates(:,2);
 
 x2 = floor((x-min(x))./PICOres) + 1;
