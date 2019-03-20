@@ -59,10 +59,10 @@ CtrlVar.ReadInitialMesh=0;    % if true then read FE mesh (coordinates, connecti
 CtrlVar.ReadInitialMeshFileName='NewMeshFile.mat';
 
 CtrlVar.TriNodes=3 ;
-CtrlVar.MeshSize=7e3; %
-CtrlVar.MeshSizeMin=7e3;% 
+CtrlVar.MeshSize=2e3; %
+CtrlVar.MeshSizeMin=1e3;% 
 CtrlVar.MeshSizeMax=CtrlVar.MeshSize;
-CtrlVar.MaxNumberOfElements=10000; %
+CtrlVar.MaxNumberOfElements=1e6; %
 
 %% for adaptive meshing
 CtrlVar.MeshGenerator='mesh2d';  % possible values: {mesh2d|gmsh}
