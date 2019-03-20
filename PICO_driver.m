@@ -1,4 +1,4 @@
-function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX] = PICO_driver(CtrlVar,MUA,GF,h,rhoi,PICO_opts)
+function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rhoi,rhow,PICO_opts)
 %
 % PICO melt rate parameterisation v0.4
 % Outputs melt rate in units of metres per year
@@ -133,8 +133,8 @@ gamTstar = PICO_opts.gamTstar;
 nmax = PICO_opts.nmax;
 
 % fix this... only need them for mu, calculate over each box?
-rhow = 1030;
-rho = 910;
+%rhow = 1030;
+%rho = 910;
 
 Sk = zeros(MUA.Nnodes,1);
 Tk = zeros(MUA.Nnodes,1);
@@ -143,7 +143,7 @@ Skm = zeros(max(ShelfID),nmax);
 Tstar = zeros(MUA.Nnodes,1);
 
 
-mu = rho./rhow;
+mu = rhoi./rhow;
 lambda = L/cp;
 s1 = S0./(mu*lambda);
 gk = Ak.*gamTstar;
