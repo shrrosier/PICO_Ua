@@ -1,7 +1,7 @@
 %% Run Pico for the test example
 
 %% Load data
-clearvars
+
 load ResultsFiles/0000001-RegressionTest.mat;
 %%
 addpath(genpath('../')); % PATH TO PICO
@@ -17,16 +17,15 @@ y = MUA.coordinates(:,2);
 % Run PICO:
 PICO_opts = struct;
 PICO_opts.minArea = 1000;
-PICO_opts.algorithm = 'watershed';
+PICO_opts.algorithm = 'watershed'; % PICO_opts.algorithm = 'polygon';
 PICO_opts.C1 = 1e6;
 PICO_opts.gamTstar = 2e-5;
 PICO_opts.nmax = 5;
 PICO_opts.SmallShelfMelt = 0;
-PICO_opts.PICOres = 500;
-PICO_opts.Tbasins = -1.0;
-PICO_opts.Sbasins = 34.5; 
-load('MeshBoundaryCoordinates.mat');
-PICO_opts.MeshBoundaryCoordinates = MeshBoundaryCoordinates;
+PICO_opts.PICOres = 6000;
+PICO_opts.Tbasins = [-1.76;-1.66;-1.65;-1.58;-1.51;-1.73;-1.68;-0.73;-1.61;-1.30;-1.83;-1.58;-0.36;0.47;1.04;1.17;0.23;-1.23;-1.80];
+PICO_opts.Sbasins = [34.82;34.70;34.48;34.49;34.5;34.70;34.65;34.73;34.75;34.84;34.95;34.79;34.58;34.73;34.86;34.84;34.70;34.76;34.84];
+PICO_opts.MeshBoundaryCoordinates = 'MeshBoundaryCoordinates.mat'
 
 %tic
 
@@ -66,9 +65,6 @@ if do_plots
     ShelfID_per_ele = mean(ShelfID(MUA.connectivity),2);
     Int=FEintegrate2D([],MUA,Mk); % integarte melt rate over elements
     Areas = TriAreaFE(MUA.coordinates,MUA.connectivity); % get the area of each triangle
-
-
-    number_of_shelves = max(ShelfID);
 
     average_melting_per_shelf = zeros(number_of_shelves,1);
     average_x_loc_per_shelf   = zeros(number_of_shelves,1);

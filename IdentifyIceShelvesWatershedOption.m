@@ -21,7 +21,10 @@ function [ShelfNum,BoxID,Ak,floating] = IdentifyIceShelvesWatershedOption(CtrlVa
 [~,~,Zi,in] = tri2grid(MUA,GF.node,PICOres);
 
 notshelf = Zi>0.99 | ~in;
-ws = watershed(notshelf);
+% ws = watershed(notshelf); %bwlabel seems to do a better and MUCH faster job
+inshelf = ~notshelf;
+ws = bwlabel(inshelf,8);
+% CC = bwconncomp(inshelf,8); ws = labelmatrix(CC);  this seems to be slower
 x = MUA.coordinates(:,1); y= MUA.coordinates(:,2);
 
 x2 = floor((x-min(x))./PICOres) + 1;
@@ -93,7 +96,7 @@ for ii = 1:max(ShelfNum) % calculate dGL and dIF for each ice shelf
     % advantage of removing islands within an ice shelf
     
     k = boundary(xBox,yBox,1);
-    te=setdiff(k,find(D==0));
+    te=setdiff(k,find(D==0)); % instead of this... ensure node is not part of the same element as a node on the boundary
     [~, D2] = knnsearch([xBox(te) yBox(te)],[xBox yBox]); % distance of every shelf node to GL
     dGL(ShelfNum==ii) = D2;
     
