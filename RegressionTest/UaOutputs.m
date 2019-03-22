@@ -5,11 +5,8 @@ v2struct(F);
 
 time=CtrlVar.time; 
 
+plots='-mua-';
 
-plots='-ubvb-e-save-mua-dhdt(x)-h(x)-';
-%plots='-udvd-ubvb-ub(x)-sbSB(x)-txzb(x)-';
-%plots='-ub(x)-h(x)-sbSB(x)-';
-%plots='-h(x)-ub(x)-dhdt(x)-';
 
 TRI=[];
 x=MUA.coordinates(:,1);  y=MUA.coordinates(:,2);

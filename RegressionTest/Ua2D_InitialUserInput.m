@@ -1,19 +1,20 @@
 
 function [UserVar,CtrlVar,MeshBoundaryCoordinates]=Ua2D_InitialUserInput(UserVar,CtrlVar)
 
-% to plot the SSA terms:
-CtrlVar.MUA.MassMatrix=true; 
 
 CtrlVar.Experiment='RegressionTest';
 CtrlVar.doplots=0; CtrlVar.doRemeshPlots=0;
 UserVar.OutputsDir = 'ResultsFiles';
 
-xd=600e3; xu=0e3 ; yl=600e3 ; yr=-600e3; % 12km wide
+% Quadratic area with a round ice shelf its the center
+xd=600e3; xu=-600e3 ; yl=600e3 ; yr=-600e3; 
 MeshBoundaryCoordinates=flipud([xu yr ; xd yr ; xd yl ; xu yl]);
+xd_inner = 1e3; xu_inner = -1e3; yl_inner = 1e3; yr_inner = -1e3;
+MeshBoundaryCoordinates = [MeshBoundaryCoordinates; NaN NaN; flipud([xu_inner yr_inner ; xd_inner yr_inner ; xd_inner yl_inner ; xu_inner yl_inner]);]
 
 save MeshBoundaryCoordinates.mat MeshBoundaryCoordinates;
 
-%% Types of runs
+%% 
 CtrlVar.TimeDependentRun=0;
 CtrlVar.time=0 ;
 CtrlVar.dt=0.01;
@@ -24,20 +25,8 @@ CtrlVar.TotalTime=0;
 CtrlVar.ThicknessConstraints=0;
 CtrlVar.FlowApproximation='SSTREAM' ;  % 'SSTREAM'|'SSHEET'|'Hybrid'
 
-%make sure that width of grounding line is well below 1m which is the boundary layer width that we are interested in 
-CtrlVar.kH=10; % 0.001 m width
+CtrlVar.kH=10; 
 
-%CtrlVar.Implicituvh=0;      CtrlVar.TG3=0;
-%CtrlVar.uvhTimeSteppingMethod='theta';  % theta | tg3 | supg
-%CtrlVar.uvhTimeSteppingMethod='supg';  % theta | tg3 | supg
-%CtrlVar.SUPG.beta0=0.5 ; CtrlVar.SUPG.beta1=0.0 ;
-%CtrlVar.theta=0.5;
-
-%CtrlVar.uvhTimeSteppingMethod='tg3';  CtrlVar.TG3=1 ; % theta | tg3 | supg
-%CtrlVar.uvhTimeSteppingMethod='shocks';
-
-
-%CtrlVar.SpeedZero=1e-10;
 %% Solver
 CtrlVar.NLtol=1e-15; % this is the square of the error, i.e. not root-mean-square error
 CtrlVar.InfoLevelNonLinIt=1;
@@ -54,13 +43,12 @@ CtrlVar.NameOfRestartFiletoWrite='./ResultsFiles/Ua2D_Restartfile.mat';
 
 %% Mesh generation and remeshing parameters
 
-CtrlVar.ReadInitialMesh=0;    % if true then read FE mesh (coordinates, connectivity) directly from a .mat file
-% unless the adaptive meshing option is used, no further meshing is done.
+CtrlVar.ReadInitialMesh=0;    
 CtrlVar.ReadInitialMeshFileName='NewMeshFile.mat';
 
 CtrlVar.TriNodes=3 ;
-CtrlVar.MeshSize=2e3; %
-CtrlVar.MeshSizeMin=1e3;% 
+CtrlVar.MeshSize=10e3; %
+CtrlVar.MeshSizeMin=10e3;% 
 CtrlVar.MeshSizeMax=CtrlVar.MeshSize;
 CtrlVar.MaxNumberOfElements=1e6; %
 
@@ -74,8 +62,6 @@ CtrlVar.AdaptMeshUntilChangeInNumberOfElementsLessThan=0;
 
 CtrlVar.InfoLevelAdaptiveMeshing=1;
 CtrlVar.MeshRefinementMethod='explicit:local:newest vertex bisection';
-
-
 CtrlVar.MeshAdapt.GLrange=[1500 500 ; 1000 250 ; 500 100 ; 200 50; 100 20 ]; %
                                             
 %% plotting

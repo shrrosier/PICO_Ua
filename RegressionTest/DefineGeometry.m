@@ -10,7 +10,7 @@ alpha=0.;
 gamma=0.01;
 S=x*0 ; 
 B=-500 + zeros(MUA.Nnodes,1) ;
-Circle = ((x/1000-600).^2 + (y/1000).^2)<=(500)^2; %half circle around (6km,0),5km radius
+Circle = ((x/1000).^2 + (y/1000).^2)<=(500)^2; %circle around (0,0), 500km radius
 B(Circle) = -1000;
 b=B;
 
