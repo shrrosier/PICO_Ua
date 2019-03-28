@@ -1,39 +1,20 @@
 function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rhoi,rhow,PICO_opts)
 %
-% PICO melt rate parameterisation v0.4
-% Outputs melt rate in units of metres per year
-% NOTE:
-% THE WATERSHED OPTION MAY BE FASTER BUT REQUIRES THE IMAGE PROCESSING TOOLBOX
+% Usage:
+% [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rhoi,rhow,PICO_opts)
 %
-% Exampple Usage:
-%   [Mk,ShelfID,T0,S0] = PICO_driver(CtrlVar,MUA,GF,b,rho,PICO_opts)
+% Mk is melt rate in metres per year
 %
-% Inputs:
+% optional outputs: 
 %
-%   CtrlVar: Control Variables (Ua structure)
-%   MUA: Mesh (Ua structure)
-%   GF: Grounded/floating mask (Ua structure)
-%   h: ice thickness (MUA.Nnodes x 1)
-%   rho: ice density (MUA.Nnodes x 1)
-%   PICO_opts: structure containing various PICO options, listed below:
+% ShelfID: Shelf ID number of each node
+% T0,S0: ambient basin T and S of each node
+% Tkm, Skm: calculated T and S of each node
+% q: overturning
+% PBOX: Box ID number of each node
+% Ak: Areas of each Shelf
 %
-%   - algorithm: either 'watershed' or 'polygon'
-%   - PICOres: Resolution to use when searching for ice shelves i.e. 10000
-%   (only used in watershed algorithm)
-%   - FloatingCriteria: either 'GLthreshold' or 'StrictDownstream'
-%   - SmallShelfMelt: melt to floating regions not included in PICO boxes i.e. 0
-%   - nmax: maximum number of PICO boxes (optional, default = 5)
-%   - minArea: minimum area for an ice shelf to be defined in PICO
-%   - minNumShelf: minimum number of floating nodes for an ice shelf to be
-%   defined in PICO
-%   - C: Overturning strength (optional, default = 1e6)
-%   - gamTstar: turbulent temp. exch. coeff. (optional, default = 2e-5)
-%   - BasinsFile: .mat file containing scattered interpolant of Basin IDs
-%   for you domain
-%   - Tbasins: for each basin ID, the corresponding temperature T0
-%   - Sbasins: for each basin ID, the corresponding salinity S0
-%   - MeshBoundaryCoordinates: Nnodes x 2 matrix containing the mesh boundary
-%   coordinates, as defined in Ua2DInitialUserInput (for polygon option)
+% type 'help PICO' for more details
 %
 x = MUA.coordinates(:,1); y = MUA.coordinates(:,2);
 
@@ -63,7 +44,7 @@ if ~isfield(PICO_opts,'minNumShelf')
 end
 if ~isfield(PICO_opts,'SmallShelfMelt')
     PICO_opts.SmallShelfMelt = 0;
-    warning('Applying default zero melt to floating nodes outside of floating, change this in PICO_opts.SmallShelfMelt');
+    warning('Applying default zero melt to floating nodes outside of delineated shelves, change this in PICO_opts.SmallShelfMelt');
 end
 if ~isfield(PICO_opts,'BasinsFile')
     Fbasins = scatteredInterpolant(x,y,ones(MUA.Nnodes,1));

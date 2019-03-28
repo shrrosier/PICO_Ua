@@ -46,7 +46,7 @@ if do_plots
     % boxes
     figure;
     PlotMeshScalarVariable(CtrlVar, MUA, PBOX)
-    export_fig(strcat('Pico_boxes_',PICO_opts.algorithm), '-dpdf', '-r400')
+   % export_fig(strcat('Pico_boxes_',PICO_opts.algorithm), '-dpdf', '-r400')
     
     % log melting
     decimals = 2; % number of decimal places that should be displayed +1
@@ -62,7 +62,7 @@ if do_plots
     PlotGroundingLines(CtrlVar, MUA, GF); PlotBoundary(MUA.Boundary,MUA.connectivity,MUA.coordinates,CtrlVar);
 
     %%
-    export_fig(strcat('Pico_melt_rates_',PICO_opts.algorithm), '-dpdf', '-r400')
+   % export_fig(strcat('Pico_melt_rates_',PICO_opts.algorithm), '-dpdf', '-r400')
 
 end;
 
