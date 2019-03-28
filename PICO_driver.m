@@ -5,7 +5,7 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rho
 %
 % Mk is melt rate in metres per year
 %
-% optional outputs: 
+% optional outputs:
 %
 % ShelfID: Shelf ID number of each node
 % T0,S0: ambient basin T and S of each node
@@ -68,7 +68,14 @@ if ~isfield(PICO_opts,'Sbasins')
     PICO_opts.Sbasins = zeros(PICO_opts.Nbasins,1)+defaultS;
     warning(strcat('Ocean input vector is missing, setting salinities in all basins to ',num2str(defaultS), ' psu.'));
 end
-
+if numel(rhoi) > 1
+    warning('non scalar rhoi, averaging...');
+    rhoi = mean(rhoi);
+end
+if numel(rhow) > 1
+    warning('non scalar rhow, averaging...');
+    rhow = mean(rhow);
+end
 switch PICO_opts.algorithm
     case 'watershed'
         if ~isfield(PICO_opts,'PICOres')
@@ -113,16 +120,11 @@ C1 = PICO_opts.C1;
 gamTstar = PICO_opts.gamTstar;
 nmax = PICO_opts.nmax;
 
-% fix this... only need them for mu, calculate over each box?
-%rhow = 1030;
-%rho = 910;
-
 Sk = zeros(MUA.Nnodes,1);
 Tk = zeros(MUA.Nnodes,1);
 Tkm = zeros(max(ShelfID),nmax);
 Skm = zeros(max(ShelfID),nmax);
 Tstar = zeros(MUA.Nnodes,1);
-
 
 mu = rhoi./rhow;
 lambda = L/cp;
@@ -133,10 +135,6 @@ gk2 = gk./(mu*lambda);
 
 
 % ========================= box 1 ===============================
-
-%PBoxEle=ceil(SNodes2EleMean(MUA.connectivity,PBOX));
-%ShelfIDEle = round(SNodes2EleMean(MUA.connectivity,ShelfID));
-%[Areas,~,~,~]=TriAreaFE(MUA.coordinates,MUA.connectivity);
 
 Areas=TriAreaFE(MUA.coordinates,MUA.connectivity);
 ShelfIDEle = nanmean(ShelfID(MUA.connectivity),2);
@@ -166,7 +164,7 @@ for ii = 1:max(ShelfID)
     mb = mskBox{1}(indE,:);
     ar = Areas(indE);
     BA = sum(pb.*ar);
-
+    
     
     Tstar(ind) = calc_tstar(S0(ii),T0(ii),pk(ind));
     if any(Tstar(ind) > 0) % equivalent to: if T0 < T_pmp
@@ -179,29 +177,17 @@ for ii = 1:max(ShelfID)
     
     DD = .25.*pcoeff(ii).^2 - q1;
     if any(DD<0)
-        error('something went wrong here - ask Ronja!');
+        error('something went wrong here!');
     end
     
     Tk(ind) = T0(ii) - (-.5.*pcoeff(ii) + sqrt(DD(ind)));
     Sk(ind) = S0(ii) - (S0(ii)/(mu*lambda)) * (T0(ii) - Tk(ind));
     
-    % FIXME: I think that the calculation of the average input for the next
-    % box might be the difference.
-    %   Skm(ii,1) = mean(Sk(ind)); % FIXME shouldn't this be a spatially-weighted average?
-    
     vals = nanmean(mskBox{1}.*Sk(MUA.connectivity),2);
     Skm(ii,1) = nansum(vals(indE).*ar.*pb)./BA;
     
-%     Skm(ii,1) =  PBoxAverage(MUA,ind,Areas,Sk);
-
-    %IntS=FEintegrate2D([],MUA,Sk);
-    %Skm(ii,1) = sum(IntS(ShelfIDEle==ii & PBoxEle==1))/sum(Areas(ShelfIDEle==ii & PBoxEle==1));
-    %    Tkm(ii,1) = mean(Tk(ind)); % FIXME shouldn't this be a spatially-weighted average
     vals = nanmean(mskBox{1}.*Tk(MUA.connectivity),2);
     Tkm(ii,1) = nansum(vals(indE).*ar.*pb)./BA;
-    
-    %IntT=FEintegrate2D([],MUA,Tk);
-    %Tkm(ii,1) = sum(IntT(ShelfIDEle==ii & PBoxEle==1))/sum(Areas(ShelfIDEle==ii & PBoxEle==1)); % FIXME shouldn't this be a spatially-weighted average
     
 end
 
@@ -229,27 +215,17 @@ for ii = 1:max(ShelfID)
         Tstar = calc_tstar(Skm(ii,jj-1),Tkm(ii,jj-1),pk(ind)); % calculate with Sk and Tk of box-1 but using local pk
         
         Tk(ind) = Tkm(ii,jj-1) + (gk(ii,jj).*Tstar)./(q(ii) + gk(ii,jj) - gk2(ii,jj).*a1.*Skm(ii,jj-1));
-        %     Tkm(ii,jj) = mean(Tk(ind)); % FIXME shouldn't this be a spatially-weighted average
         vals = nanmean(mskBox{jj}.*Tk(MUA.connectivity),2);
         Tkm(ii,jj) = nansum(vals(indE).*ar.*pb)./BA;
         
-%         Tkm(ii,jj) =  PBoxAverage(MUA,ind,Areas,Tk);
-        
         Sk(ind) = Skm(ii,jj-1) - Skm(ii,jj-1).*(Tkm(ii,jj-1)-Tkm(ii,jj))./(mu*lambda);
-        %Skm(ii,jj) = mean(Sk(ind)); % FIXME shouldn't this be a spatially-weighted average
-        
         vals = nanmean(mskBox{jj}.*Sk(MUA.connectivity),2);
         Skm(ii,jj) = nansum(vals(indE).*ar.*pb)./BA;
         
-%         Skm(ii,jj) =  PBoxAverage(MUA,ind,Areas,Sk);
-        
-        %IntS=FEintegrate2D([],MUA,Sk);
-        %Skm(ii,jj) = sum(IntS(ShelfIDEle==ii & PBoxEle==jj))/sum(Areas(ShelfIDEle==ii & PBoxEle==jj));
-        %IntT=FEintegrate2D([],MUA,Tk);
-        %Tkm(ii,jj) = sum(IntT(ShelfIDEle==ii & PBoxEle==jj))/sum(Areas(ShelfIDEle==ii & PBoxEle==jj));
-        
     end
 end
+
+% calculate melt rate (Mk)
 
 Mk_ms = (-gamTstar./(mu*lambda)).*(a1.*Sk + b1 - c1.*pk - Tk); % m per s
 Mk = Mk_ms .* 86400 .* 365.25; % m per a

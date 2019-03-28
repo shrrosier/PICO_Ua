@@ -19,8 +19,8 @@
 %   MUA: Mesh (Ua structure)
 %   GF: Grounded/floating mask (Ua structure)
 %   h: ice thickness (MUA.Nnodes x 1)
-%   rhoi: ice density (MUA.Nnodes x 1)
-%   rhow: water density (MUA.Nnodes x 1)
+%   rhoi: ice density (scalar)
+%   rhow: water density (scalar)
 %   PICO_opts: structure containing various PICO options (details below)
 %
 %% PICO_opts ==============================================================
