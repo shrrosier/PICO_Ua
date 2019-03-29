@@ -17,7 +17,9 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rho
 % type 'help PICO' for more details
 %
 x = MUA.coordinates(:,1); y = MUA.coordinates(:,2);
-
+if strcmp(PICO_opts.warnings,'off')
+    warning off
+end
 if ~exist('PICO_opts','var')
     PICO_opts = struct;
 end
@@ -99,6 +101,8 @@ switch PICO_opts.algorithm
     otherwise
         error('Invalid algorithm, choose either "watershed" or "polygon"');
 end
+
+warning on
 
 % ========================= input from box b0 =====================
 
@@ -231,6 +235,7 @@ Mk_ms = (-gamTstar./(mu*lambda)).*(a1.*Sk + b1 - c1.*pk - Tk); % m per s
 Mk = Mk_ms .* 86400 .* 365.25; % m per a
 Mk(~floating) = 0;
 Mk(isnan(ShelfID) & floating) = PICO_opts.SmallShelfMelt;
+
 
     function p_coeff = get_p(g1,s1)
         p_coeff = g1./(C1*rhostar*(beta*s1 - alph));

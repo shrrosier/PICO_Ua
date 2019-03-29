@@ -64,8 +64,7 @@ ShelfID(idx) = -1; % replace the shelf ID in these locations
 ShelfID(ShelfID==0) = -1; % watershed algorithm gives 0 along watershed boundaries, not sure of the best way to deal with this right now...
 [~,~,unShelfID] = unique(ShelfID); % replaces all shelf IDs with ascending numbers from 1 (note at this point 1 is grounded ice)
 unShelfID(unShelfID<2) = nan;
-unShelfID = unShelfID-1;
-ShelfNum = unShelfID;
+ShelfNum = unShelfID-1;
 
 
 if max(ShelfID)==-1

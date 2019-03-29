@@ -62,6 +62,10 @@
 % Minimum number of floating nodes (polygon) or grid cells (watershed) for
 % a given region to be considered an ice shelf.
 %
+% - PICO_opts.warnings (DEFAULT = on)
+% Set PICO_opts.warnings = 'off' to stop printing warning messages related
+% to missing fields in the PICO structure
+%
 % -------------------------------------------------------------------------
 % Options related to the ambient ocean properties: 
 %
