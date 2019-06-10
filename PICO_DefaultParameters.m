@@ -64,18 +64,7 @@ if ~isfield(PICO_opts,'Sbasins')
         warning(strcat('Ocean input vector is missing, setting salinities in all basins to ',num2str(defaultS), ' psu.'));
     end
 end
-if numel(rhoi) > 1
-    if PICO_opts.InfoLevel>0
-        warning('non scalar rhoi, averaging...');
-    end
-    rhoi = mean(rhoi);
-end
-if numel(rhow) > 1
-    if PICO_opts.InfoLevel>0
-        warning('non scalar rhow, averaging...');
-    end
-    rhow = mean(rhow);
-end
+
 switch PICO_opts.algorithm
     case 'watershed'
         if ~isfield(PICO_opts,'PICOres')
