@@ -5,7 +5,7 @@ load Ua2D_Restartfile.mat;
 load MeshBoundaryCoordinates.mat
 
 %%
-PrintInfoAboutElementsSizes(CtrlVarInRestartFile, MUA)
+PrintInfoAboutElementsSizes(CtrlVarInRestartFile, MUA);
 
 x = MUA.coordinates(:,1); 
 y = MUA.coordinates(:,2);
@@ -51,7 +51,7 @@ Mk_log = sign(Mk).*log10(abs(Mk)*10^decimals);
 
 %
 figure; hold all;
-PlotMeshScalarVariable(CtrlVarInRestartFile, MUA, Mk_log)
+PlotMeshScalarVariable(CtrlVarInRestartFile, MUA, Mk_log);
 cbar = colorbar; caxis([-log10(0.1*10^decimals) log10(30*10^decimals)]);
 cbar.Label.String = 'sub-shelf melting (m/a)';
 cbar.TickLabels = {'-0.1' ,'0', '0.1', '1', '5', '10', '30'};

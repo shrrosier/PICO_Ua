@@ -17,7 +17,7 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rho
 % type 'help PICO' for more details
 %
 
-PICO_opts = PICO_DefaultParameters();
+PICO_opts = PICO_DefaultParameters(MUA,PICO_opts);
 
 if numel(rhoi) > 1
     if PICO_opts.InfoLevel>0

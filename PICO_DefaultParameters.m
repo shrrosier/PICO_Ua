@@ -1,4 +1,4 @@
-function PICO_opts = PICO_DefaultParameters(MUA)
+function PICO_opts = PICO_DefaultParameters(MUA,PICO_opts)
 x = MUA.coordinates(:,1);
 y = MUA.coordinates(:,2);
 
@@ -65,40 +65,26 @@ if ~isfield(PICO_opts,'Sbasins')
     end
 end
 
-switch PICO_opts.algorithm
-    case 'watershed'
-        if ~isfield(PICO_opts,'PICOres')
-            % try to make a sensible choice about resolution vs speed
-            if MUA.Nnodes > 200e3
-                PICO_opts.PICOres = 6000;
-            elseif MUA.Nnodes > 100e3
-                PICO_opts.PICOres = 3000;
-            else
-                PICO_opts.PICOres = 1000;
-            end
-            if PICO_opts.InfoLevel>0
-                warning('Using default resolution, change this in PICO_opts.PICOres');
-            end
-        end
-        if PICO_opts.InfoLevel>1
-            fprintf('Using watershed algorithm to deliniate ice shelves...\n');
-        end
-        
-        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,PICO_opts.PICOres,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax,PICO_opts.FloatingCriteria);
-        
-    case 'polygon'
-        if ~isfield(PICO_opts,'MeshBoundaryCoordinates')
-            error('PICO_opts.MeshBoundaryCoordinates must be defined for the polygon option');
-        end
-        if ~isfield(PICO_opts,'persistentBC')
-            PICO_opts.persistentBC = 0;
-        end
-        if PICO_opts.InfoLevel>1
-            fprintf('Using polygon algorithm to deliniate ice shelves...\n');
-        end
-        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,PICO_opts);
-    otherwise
-        error('Invalid algorithm, choose either "watershed" or "polygon"');
+if ~isfield(PICO_opts,'PICOres') && strcmp(PICO_opts.algorithm,'watershed')
+    % try to make a sensible choice about resolution vs speed
+    if MUA.Nnodes > 200e3
+        PICO_opts.PICOres = 6000;
+    elseif MUA.Nnodes > 100e3
+        PICO_opts.PICOres = 3000;
+    else
+        PICO_opts.PICOres = 1000;
+    end
+    if PICO_opts.InfoLevel>0
+        warning('Using default resolution, change this in PICO_opts.PICOres');
+    end
+end
+
+if ~isfield(PICO_opts,'MeshBoundaryCoordinates')  && strcmp(PICO_opts.algorithm,'polygon')
+    error('PICO_opts.MeshBoundaryCoordinates must be defined for the polygon option');
+end
+
+if ~isfield(PICO_opts,'persistentBC') && strcmp(PICO_opts.algorithm,'polygon')
+    PICO_opts.persistentBC = 0;
 end
 
 
