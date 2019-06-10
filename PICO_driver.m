@@ -16,8 +16,9 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rho
 %
 % type 'help PICO' for more details
 %
-
-if nargin<6
+if nargin < 6
+    error('Some PICO inputs appear to be undefined');
+elseif nargin<7
     warning('PICO_opts undefined, using only default values... ARE YOU SURE YOU WANT TO DO THIS?');
     PICO_opts = struct;
 else
