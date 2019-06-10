@@ -17,11 +17,13 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rho
 % type 'help PICO' for more details
 %
 x = MUA.coordinates(:,1); y = MUA.coordinates(:,2);
-if strcmp(PICO_opts.warnings,'off')
-    warning off
-end
+
 if ~exist('PICO_opts','var')
     PICO_opts = struct;
+end
+if ~isfield(PICO_opts,'InfoLevel')
+    fprintf('PICO InfoLevel undefined, setting PICO_opts.InfoLevel to maximum value\n');
+    PICO_opts.InfoLevel = 100;
 end
 if ~isfield(PICO_opts,'algorithm')
     PICO_opts.algorithm = 'watershed';
@@ -46,14 +48,18 @@ if ~isfield(PICO_opts,'minNumShelf')
 end
 if ~isfield(PICO_opts,'SmallShelfMelt')
     PICO_opts.SmallShelfMelt = 0;
-    warning('Applying default zero melt to floating nodes outside of delineated shelves, change this in PICO_opts.SmallShelfMelt');
+    if PICO_opts.InfoLevel>1
+        warning('Applying default zero melt to floating nodes outside of delineated shelves, change this in PICO_opts.SmallShelfMelt');
+    end
 end
 if ~isfield(PICO_opts,'BasinsFile')
     Fbasins = scatteredInterpolant(x,y,ones(MUA.Nnodes,1));
     save('DefaultBasinsInterpolant.mat', 'Fbasins');
     PICO_opts.BasinsFile = 'DefaultBasinsInterpolant.mat';
     PICO_opts.Nbasins = 1;
-    warning('Basins file missing, setting everything to one basin');
+    if PICO_opts.InfoLevel>1
+        warning('Basins file missing, setting everything to one basin');
+    end
 end
 if ~isfield(PICO_opts, 'Nbasins')
     load(PICO_opts.BasinsFile)
