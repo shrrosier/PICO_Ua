@@ -1,5 +1,9 @@
 function Passed=RegressionTest
 
+% this is a quick synthetic test case comparing PICO-Ua with the analytical
+% solutions for a perfectly circular ice shelf. Run by typing
+% 'RegressionTest', should result in a Pass!
+
 clearvars;
 
 
