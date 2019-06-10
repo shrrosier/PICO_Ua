@@ -1,10 +1,7 @@
-function Passed=RunRegressionTest
+function Passed=RegressionTest
 
 clearvars;
 
-%% add Úa path
-
-set_ua_and_PICO_path.m
 
 %% Run Ua on a quadratic domain with a round ice shelf at its center
 % Adjust the number of elements in Ua2D_InitialUserInput to increase 
@@ -14,7 +11,7 @@ Ua
 %% Run PICO 
 % adjust further options in RunPICO
 
-RunPICO('polygon'); % 'polygon';
+CallToPICO('polygon'); % 'polygon';
 
 %% Compare to direct solution
 

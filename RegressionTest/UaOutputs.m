@@ -5,7 +5,7 @@ v2struct(F);
 
 time=CtrlVar.time; 
 
-plots='-mua-';
+plots='-save-';
 
 
 TRI=[];

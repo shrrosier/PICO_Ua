@@ -14,7 +14,7 @@ y = MUA.coordinates(:,2);
 %%
 % Run PICO:
 PICO_opts = struct;
-PICO_opts.algorithm = 'watershed';%'polygon';
+PICO_opts.algorithm = 'polygon';%'polygon';
 PICO_opts.C1 = 1e6;
 PICO_opts.gamTstar = 2e-5;
 PICO_opts.nmax = 5;
