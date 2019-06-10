@@ -1,4 +1,4 @@
-function [ShelfID,ShelfGLx2,ShelfGLy2,ShelfFrontx2,ShelfFronty2] = GetShelfID(CtrlVar, MUA, GF, MeshBoundaryCoordinates,shelf_area_cutoff,shelf_size_cutoff)
+function [ShelfID,ShelfGLx2,ShelfGLy2,ShelfFrontx2,ShelfFronty2] = GetShelfID(CtrlVar, MUA, GF,PICO_opts)
 % Identify each ice shelf with an individual ID number
 %
 % Example:
@@ -17,15 +17,16 @@ function [ShelfID,ShelfGLx2,ShelfGLy2,ShelfFrontx2,ShelfFronty2] = GetShelfID(Ct
 
 
 % declare BCn as persistent so any reordering only needs to be done once
-% persistent BCn
+if PICO_opts.persistentBC
+    persistent BCn
+end
 
 %==========================================================================
 % TUNING PARAMETERS:
 GL_cutoff = 0; % if a GL polyline is shorter than this length, ignore it NB: runtime sensitive to this number, 0 will give best behaviour but larger number will make it considerably faster
-% shelf_area_cutoff = 1e9; % if a shelf area is less than this, ignore it
-% shelf_size_cutoff = 20; % if a shelf has less floating nodes than this number, ignore it (NOTE: if this is set to zero then grounded islands touching the boundary will be included in the result!!)
+% minArea = 1e9; % if a shelf area is less than this, ignore it
+% minNumShelf = 20; % if a shelf has less floating nodes than this number, ignore it (NOTE: if this is set to zero then grounded islands touching the boundary will be included in the result!!)
 %==========================================================================
-
 
 x = MUA.coordinates(:,1);
 y = MUA.coordinates(:,2);
@@ -40,9 +41,14 @@ else
     GL_ind = [0; numel(xGL)];
 end
 
-% if isempty(BCn)
-    BCn = MeshBoundaryCoordinates;
-% end
+if PICO_opts.persistentBC && ~isempty(BCn)
+    if PICO_opts.InfoLevel > 10
+        disp('Using previous boundary coordinate file');
+    end
+else
+    BCn = PICO_opts.MeshBoundaryCoordinates;
+end
+
 dxs = x - BCn(1,1); dys = y - BCn(1,2);
 ds = hypot(dxs,dys); [~,nod_start] = min(ds); % find index of node at start of MeshBoundaryCoords to check if it's floating
 I =  GF.node < CtrlVar.GLthreshold;
@@ -64,7 +70,7 @@ if GF.node(nod_start) < 0.5 % now we have a problem - mesh boundary coordinates 
     GFbound_pos = nan;
     start_counting = false;
     for ii = 1:numel(GFchange)
-        if GFchange(ii) > 0.5 % next node is grounded 
+        if GFchange(ii) > 0.5 % next node is grounded
             start_counting = true;
             start_ind = ii+1;
         elseif GFchange(ii) < -0.5 % grounded to floating
@@ -86,7 +92,7 @@ end
 
 %initiate blank shelfID vector
 ShelfID = zeros(MUA.Nnodes,1)*nan;
-shelfnum = 1; 
+shelfnum = 1;
 
 % calculate total area of the domain
 % domain_area = polyarea(BCn(:,1),BCn(:,2));
@@ -112,7 +118,7 @@ for ii =1:numel(GL_ind)-1 % loop through every GL polyline
         num_GL_ignore = num_GL_ignore + 1;
         continue
     end
-
+    
     % this checks if the GL polyline defines a lake (faster than LakeOrOcean.m)
     % if it is then move on to the next grounding line
     IN = 0;
@@ -126,13 +132,13 @@ for ii =1:numel(GL_ind)-1 % loop through every GL polyline
         num_lake_ignore = num_lake_ignore + 1;
         continue
     end
-
+    
     % find the nearest node to start and end of mesh boundary coords
     dxs = xGL(GL_ind(ii)+1)-BCn(:,1); dys = yGL(GL_ind(ii)+1)-BCn(:,2);
     ds = hypot(dxs,dys); [~,nod_start] = min(ds);
     dxe = xGL(GL_ind(ii+1)-1)-BCn(:,1); dye = yGL(GL_ind(ii+1)-1)-BCn(:,2);
     de = hypot(dxe,dye); [~,nod_end] = min(de);
-
+    
     % generate xvec, yvec which define the boundary of the a polygon formed
     % from the GL polyline and mesh boundary polyline
     
@@ -160,22 +166,22 @@ for ii =1:numel(GL_ind)-1 % loop through every GL polyline
     % and move on to next GL polyline... NB: add these to the purge vector
     % so that these small ice shelves are removed from larger surrounding
     % shelves (happens in nested shelves for complex geometries)
-    if sum(in2)<shelf_size_cutoff
+    if sum(in2)<PICO_opts.minNumShelf
         num_ShelfSize_ignore = num_ShelfSize_ignore + 1;
         to_purge = to_purge+in;
         continue
     end
-
+    
     % calculate area of the polygon
     shelf_area = polyarea(xvec,yvec);
     
     % if the area is below threshold, ignore it and move on as above
-    if shelf_area < shelf_area_cutoff
+    if shelf_area < PICO_opts.minArea
         num_ShelfArea_ignore = num_ShelfArea_ignore + 1;
         to_purge = to_purge+in;
         continue
     end
-        
+    
     % keep track of the coordinates of the GL and Ice front (used for
     % generating melt boxes later)
     ShelfGLx{shelfnum} = xGL(GL_ind(ii)+1:GL_ind(ii+1)-1);
@@ -190,9 +196,9 @@ for ii =1:numel(GL_ind)-1 % loop through every GL polyline
     area_sav(shelfnum) = shelf_area;
     xvecsav{shelfnum} = xvec;
     yvecsav{shelfnum} = yvec;
-
+    
     shelfnum = shelfnum+1; % we got this far so it was a valid ice shelf, increment shelf number
-
+    
 end
 
 if shelfnum==1
@@ -200,7 +206,7 @@ if shelfnum==1
 end
 
 % this section sorts all the identified ice shelves by area (not
-% necessarily already the case - previously sorted by number of GL 
+% necessarily already the case - previously sorted by number of GL
 % vertices). We need to do this to help with the check for nested ice
 % shelves.
 
@@ -232,7 +238,7 @@ for ii = 1:max(shelfnum)-1
     end
     
 end
-   
+
 % now we can delete all those nodes belonging to small shelves that didn't
 % make the cutoff... I think this cannot be done before this point...
 ShelfID(to_purge>0) = nan;
@@ -244,7 +250,7 @@ badShelf = [];
 cur = 1;
 for ii = 1:max(ShelfID)
     numShelf = sum(ShelfID==cur);
-    if numShelf<shelf_size_cutoff
+    if numShelf<PICO_opts.minNumShelf
         badShelf = [badShelf ii];
         ShelfID(ShelfID==cur) = nan;
         ShelfID(ShelfID>cur) = ShelfID(ShelfID>cur)-1;
@@ -259,10 +265,11 @@ ShelfGLy2(badShelf) = [];
 ShelfFrontx2(badShelf) = [];
 ShelfFronty2(badShelf) = [];
 
-
-
-disp(['Ignored ' num2str(num_GL_ignore) ' ice shelves due to GL length cutoff criteria of ' num2str(GL_cutoff)]);
-disp(['Ignored ' num2str(num_ShelfArea_ignore) ' ice shelves due to shelf area cutoff criteria of ' num2str(shelf_area_cutoff)]);
-disp(['Ignored ' num2str(num_ShelfSize_ignore) ' ice shelves due to shelf size cutoff criteria of ' num2str(shelf_size_cutoff)]);
-disp(['Ignored ' num2str(num_lake_ignore) ' lakes (floating nodes fully enclosed by a GL)']);
-
+if PICO_opts.InfoLevel>10
+    
+    disp(['Ignored ' num2str(num_GL_ignore) ' ice shelves due to GL length cutoff criteria of ' num2str(GL_cutoff)]);
+    disp(['Ignored ' num2str(num_ShelfArea_ignore) ' ice shelves due to shelf area cutoff criteria of ' num2str(PICO_opts.minArea)]);
+    disp(['Ignored ' num2str(num_ShelfSize_ignore) ' ice shelves due to shelf size cutoff criteria of ' num2str(PICO_opts.minNumShelf)]);
+    disp(['Ignored ' num2str(num_lake_ignore) ' lakes (floating nodes fully enclosed by a GL)']);
+    
+end

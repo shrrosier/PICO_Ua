@@ -1,20 +1,26 @@
-function [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,minArea,minNumS,nmax,MeshBoundaryCoordinates,FloatingCriteria)
+function [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,PICO_opts)
 
-%load('Schmitko.mat');
-%load('MeshBoundaryCoordinates.mat');
-% load ResultsFiles/AntarcticSetup_BFRN_transient_run3/MeshBoundaryCoordinates.mat;
+nmax = PICO_opts.nmax;
 
-[ShelfID,ShelfGLx,ShelfGLy,ShelfFrontx,ShelfFronty] = GetShelfID(CtrlVar, MUA, GF, MeshBoundaryCoordinates,minArea,minNumS);
+if PICO_opts.InfoLevel>10
+    disp('===========================================================');
+    fprintf('Calling GetShelfID...\n');
+end
 
-
+[ShelfID,ShelfGLx,ShelfGLy,ShelfFrontx,ShelfFronty] = GetShelfID(CtrlVar, MUA, GF, PICO_opts);
+if PICO_opts.InfoLevel>10
+    fprintf('Polygon option ran successfully and defined %2i ice shelves\n',max(ShelfID));
+end
 Ak = zeros(max(ShelfID),nmax);
-rho_m = Ak;
 
 x = MUA.coordinates(:,1);
 y = MUA.coordinates(:,2);
 
 blnkBox = zeros(MUA.Nnodes,1);
 
+if PICO_opts.InfoLevel>10
+    fprintf('For each Ice Shelf node, calculating distance to GL and ice front...');
+end
 
 for ii = 1:max(ShelfID)
     
@@ -28,11 +34,18 @@ for ii = 1:max(ShelfID)
 %     T0(ii) = mean(TT(ib));
 %     S0(ii) = mean(SS(ib));
     
+end
 
-
+if PICO_opts.InfoLevel>10
+    fprintf('Success!\n');
 end
 
 %%
+
+if PICO_opts.InfoLevel>10
+    fprintf('Separating each ice shelf into a maximum of %1i boxes ',PICO_opts.nmax);
+    fprintf('(You can change this value in PICO_opts.nmax)...');
+end
 
 for ii = 1:max(ShelfID)
 
@@ -58,11 +71,19 @@ for ii = 1:max(ShelfID)
     
 end
 
+if PICO_opts.InfoLevel>10
+    fprintf('Success!\n');
+end
+
 %% THIS SECTION DETERMINES THE BOX AREAS
 
 PBoxEle=round(SNodes2EleMean(MUA.connectivity,blnkBox));
 ShelfIDEle = round(SNodes2EleMean(MUA.connectivity,ShelfID));
 [Areas,~,~,~]=TriAreaFE(MUA.coordinates,MUA.connectivity);
+
+if PICO_opts.InfoLevel>10
+    fprintf('Calculating the area of each box...');
+end
 
 % Each row of Ak is a unique shelf and each column is a box number within
 % that shelf, each element of Ak is the total area of a box in a shelf
@@ -73,11 +94,15 @@ for ii = 1:max(ShelfID)
     end
 end
 
+if PICO_opts.InfoLevel>10
+    fprintf('Success!\n');
+end
+
 
 PBOX = blnkBox;
 PBOX(PBOX==0) = nan;
 
-switch FloatingCriteria
+switch PICO_opts.FloatingCriteria
     case 'GLthreshold'
     floating = GF.node < CtrlVar.GLthreshold;
     case 'StrictDownstream'
@@ -85,6 +110,12 @@ switch FloatingCriteria
     floating = GF.NodesDownstreamOfGroundingLines;
     otherwise
     error('Invalid value for PICO_opts.FloatingCriteria');
+end
+
+if PICO_opts.InfoLevel>10
+    disp('===========================================================');
+    disp('======== Polygon algorithm completes successfully =========');
+    disp('===========================================================');
 end
 
 end

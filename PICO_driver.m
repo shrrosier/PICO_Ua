@@ -18,7 +18,11 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rho
 %
 x = MUA.coordinates(:,1); y = MUA.coordinates(:,2);
 
+PICO_opts = PICO_DefaultParameters();
+
+
 if ~exist('PICO_opts','var')
+    warning('PICO_opts undefined, using default values... ARE YOU SURE YOU WANT TO DO THIS?');
     PICO_opts = struct;
 end
 if ~isfield(PICO_opts,'InfoLevel')
@@ -48,7 +52,7 @@ if ~isfield(PICO_opts,'minNumShelf')
 end
 if ~isfield(PICO_opts,'SmallShelfMelt')
     PICO_opts.SmallShelfMelt = 0;
-    if PICO_opts.InfoLevel>1
+    if PICO_opts.InfoLevel>0
         warning('Applying default zero melt to floating nodes outside of delineated shelves, change this in PICO_opts.SmallShelfMelt');
     end
 end
@@ -57,31 +61,38 @@ if ~isfield(PICO_opts,'BasinsFile')
     save('DefaultBasinsInterpolant.mat', 'Fbasins');
     PICO_opts.BasinsFile = 'DefaultBasinsInterpolant.mat';
     PICO_opts.Nbasins = 1;
-    if PICO_opts.InfoLevel>1
+    if PICO_opts.InfoLevel>0
         warning('Basins file missing, setting everything to one basin');
     end
 end
 if ~isfield(PICO_opts, 'Nbasins')
     load(PICO_opts.BasinsFile)
     PICO_opts.Nbasins = max(Fbasins(x,y));
-    fprintf(strcat('Using '));
 end
 if ~isfield(PICO_opts,'Tbasins')
     defaultT = -1.8; % deg C
     PICO_opts.Tbasins = zeros(PICO_opts.Nbasins,1)+defaultT;
-    warning(strcat('Ocean input vector is missing, setting temperatures in all basins to ',num2str(defaultT), ' degree C.'));
+    if PICO_opts.InfoLevel>0
+        warning(strcat('Ocean input vector is missing, setting temperatures in all basins to ',num2str(defaultT), ' degree C.'));
+    end
 end
 if ~isfield(PICO_opts,'Sbasins')
     defaultS = 33.8; % psu
     PICO_opts.Sbasins = zeros(PICO_opts.Nbasins,1)+defaultS;
-    warning(strcat('Ocean input vector is missing, setting salinities in all basins to ',num2str(defaultS), ' psu.'));
+    if PICO_opts.InfoLevel>0
+        warning(strcat('Ocean input vector is missing, setting salinities in all basins to ',num2str(defaultS), ' psu.'));
+    end
 end
 if numel(rhoi) > 1
-    warning('non scalar rhoi, averaging...');
+    if PICO_opts.InfoLevel>0
+        warning('non scalar rhoi, averaging...');
+    end
     rhoi = mean(rhoi);
 end
 if numel(rhow) > 1
-    warning('non scalar rhow, averaging...');
+    if PICO_opts.InfoLevel>0
+        warning('non scalar rhow, averaging...');
+    end
     rhow = mean(rhow);
 end
 switch PICO_opts.algorithm
@@ -95,23 +106,35 @@ switch PICO_opts.algorithm
             else
                 PICO_opts.PICOres = 1000;
             end
-            warning('Using default resolution, change this in PICO_opts.PICOres');
+            if PICO_opts.InfoLevel>0
+                warning('Using default resolution, change this in PICO_opts.PICOres');
+            end
+        end
+        if PICO_opts.InfoLevel>1
+            fprintf('Using watershed algorithm to deliniate ice shelves...\n');
         end
         
         [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,PICO_opts.PICOres,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax,PICO_opts.FloatingCriteria);
+        
     case 'polygon'
         if ~isfield(PICO_opts,'MeshBoundaryCoordinates')
             error('PICO_opts.MeshBoundaryCoordinates must be defined for the polygon option');
         end
-        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax,PICO_opts.MeshBoundaryCoordinates,PICO_opts.FloatingCriteria);
+        if ~isfield(PICO_opts,'persistentBC')
+            PICO_opts.persistentBC = 0;
+        end
+        if PICO_opts.InfoLevel>1
+            fprintf('Using polygon algorithm to deliniate ice shelves...\n');
+        end
+        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,PICO_opts);
     otherwise
         error('Invalid algorithm, choose either "watershed" or "polygon"');
 end
 
-warning on
-
 % ========================= input from box b0 =====================
-
+if PICO_opts.InfoLevel>1
+    fprintf('Calculating temperature and salinity for box 0...\n');
+end
 [T0,S0] = GetOceanInputFromBox0(CtrlVar,MUA,GF,ShelfID,PICO_opts);
 
 % ========================= physics ===============================
@@ -146,6 +169,10 @@ gk2 = gk./(mu*lambda);
 
 % ========================= box 1 ===============================
 
+if PICO_opts.InfoLevel>1
+    fprintf('Calculating temperature and salinity for box 1...\n');
+end
+
 Areas=TriAreaFE(MUA.coordinates,MUA.connectivity);
 ShelfIDEle = nanmean(ShelfID(MUA.connectivity),2);
 
@@ -161,7 +188,6 @@ for ii = 1:nmax
     mskBox{ii} = msk;
 end
 % ------------------------------
-
 
 pcoeff = get_p(gk(:,1),s1);
 
@@ -205,6 +231,10 @@ q = C1*rhostar*(beta*(S0-Skm(:,1)) - alph*(T0-Tkm(:,1)));
 
 % ========================= box k ===============================
 
+if PICO_opts.InfoLevel>10
+    fprintf('Calculating temperature and salinity for ice shelf ');
+end
+
 for ii = 1:max(ShelfID)
     
     indE = ShelfIDEle==ii;
@@ -232,10 +262,19 @@ for ii = 1:max(ShelfID)
         vals = nanmean(mskBox{jj}.*Sk(MUA.connectivity),2);
         Skm(ii,jj) = nansum(vals(indE).*ar.*pb)./BA;
         
+        
     end
+    
+    if PICO_opts.InfoLevel>10
+        fprintf(strcat(num2str(ii),', '))
+    end
+    
 end
-
 % calculate melt rate (Mk)
+
+if PICO_opts.InfoLevel>1
+    fprintf('\nCalculating basal melt rates...\n');
+end
 
 Mk_ms = (-gamTstar./(mu*lambda)).*(a1.*Sk + b1 - c1.*pk - Tk); % m per s
 Mk = Mk_ms .* 86400 .* 365.25; % m per a

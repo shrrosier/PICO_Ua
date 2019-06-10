@@ -1,5 +1,5 @@
 
-%% PICO melt rate parameterisation v0.5 ===================================
+%% PICO melt rate parameterisation v0.6 ===================================
 % An Ua implementation of the Potsdam Ice-shelf Cavity mOdel (PICO),
 % details of the model can be found in Reese et al. 2018
 % https://www.the-cryosphere.net/12/1969/2018/
@@ -105,3 +105,7 @@
 % - PICO_opts.MeshBoundaryCoordinates
 % This should be the same n x 2 matrix that is provided to
 % Ua2D_InitialUserInput.m
+%
+% - PICO_opts.persistentBC (DEFAULT = 0)
+% To avoid reordering mesh boundary coordinates every time PICO is called,
+% set this parameter to 1
