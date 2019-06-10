@@ -1,4 +1,4 @@
-function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rhoi,rhow,PICO_opts)
+function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rhoi,rhow,varargin)
 %
 % Usage:
 % [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rhoi,rhow,PICO_opts)
@@ -16,6 +16,13 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rho
 %
 % type 'help PICO' for more details
 %
+
+if nargin<6
+    warning('PICO_opts undefined, using only default values... ARE YOU SURE YOU WANT TO DO THIS?');
+    PICO_opts = struct;
+else
+    PICO_opts = varargin{1};
+end
 
 PICO_opts = PICO_DefaultParameters(MUA,PICO_opts);
 
