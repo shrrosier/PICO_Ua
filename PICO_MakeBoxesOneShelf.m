@@ -1,6 +1,9 @@
-function [ShelfNum,BoxID,Ak,floating] = PICO_MakeBoxesOneShelf(UserVar,CtrlVar,MUA,GF,nmax,FloatingCriteria)
+function [ShelfNum,BoxID,Ak,floating] = PICO_MakeBoxesOneShelf(UserVar,CtrlVar,MUA,GF,PICO_opts)
 
 %% first create the ice shelf ID from a floating mask
+
+nmax = PICO_opts.nmax;
+FloatingCriteria = PICO_opts.FloatingCriteria;
 
 switch FloatingCriteria
     case 'GLthreshold'

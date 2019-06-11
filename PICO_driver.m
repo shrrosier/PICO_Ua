@@ -54,6 +54,13 @@ switch PICO_opts.algorithm
             fprintf('Using polygon algorithm to deliniate ice shelves...\n');
         end
         [ShelfID,PBOX,Ak,floating] = PICO_IdentifyIceShelvesPolygonOption(UserVar,CtrlVar,MUA,GF,PICO_opts);
+        
+    case 'oneshelf'
+        if PICO_opts.InfoLevel>1
+            fprintf('using oneshelf option, ONLY DO THIS IF YOURE CERTAIN YOU WILL ONLY EVER HAVE ONE ICE SHELF...\n');
+        end
+        [ShelfID,PBOX,Ak,floating] = PICO_MakeBoxesOneShelf(UserVar,CtrlVar,MUA,GF,PICO_opts);
+        
     otherwise
         error('Invalid algorithm, choose either "watershed" or "polygon"');
 end

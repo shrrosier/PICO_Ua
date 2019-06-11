@@ -11,10 +11,10 @@
 % -------------------------------------------------------------------------
 % To run PICO, use the following syntax:
 %
-% ab = PICO_driver(CtrlVar,MUA,GF,h,rhoi,rhow,PICO_opts)
+% ab = PICO_driver(UserVar,CtrlVar,MUA,GF,h,rhoi,rhow,PICO_opts)
 %
 % where:
-%
+%   UserVar: User Variables (Ua structure)
 %   CtrlVar: Control Variables (Ua structure)
 %   MUA: Mesh (Ua structure)
 %   GF: Grounded/floating mask (Ua structure)
@@ -33,7 +33,7 @@
 % -------------------------------------------------------------------------
 % General options:
 %
-% - PICO_opts.algorithm: 'watershed' or 'polygon' (DEFAULT = 'watershed')
+% - PICO_opts.algorithm: 'watershed', 'polygon' or 'oneshelf' (DEFAULT = 'watershed')
 % There are two options related to how ice shelves are delineated. The
 % 'watershed' options converts MUA into a structured grid and then uses
 % image processing techniques to quickly define connected floating regions
@@ -41,7 +41,11 @@
 % each individual GL segment and the MeshBoundaryCoordinates and defines
 % individual ice shelves as floating nodes within these polygons. In
 % general the 'watershed' option will be considerably faster while the
-% 'polygon' option is much slower but generally more robust.
+% 'polygon' option is much slower but generally more robust. The 'oneshelf'
+% option should only be used when you are certain that you will only ever
+% have one distinct ice shelf in your domain and this will make the code
+% considerably faster. Note: In this case any checks on shelf area etc. are
+% ignored.
 %
 % - PICO_opts.SmallShelfMelt (DEFAULT = 0)
 % The melt rate applied to floating nodes that for whatever reason are not
