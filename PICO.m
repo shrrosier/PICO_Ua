@@ -1,3 +1,4 @@
+function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO(UserVar,CtrlVar,MUA,GF,h,rhoi,rhow,varargin)
 
 %% PICO melt rate parameterisation v0.7 ===================================
 % An Ua implementation of the Potsdam Ice-shelf Cavity mOdel (PICO),
@@ -11,7 +12,7 @@
 % -------------------------------------------------------------------------
 % To run PICO, use the following syntax:
 %
-% ab = PICO_driver(UserVar,CtrlVar,MUA,GF,h,rhoi,rhow,PICO_opts)
+% ab = PICO(UserVar,CtrlVar,MUA,GF,h,rhoi,rhow,PICO_opts)
 %
 % where:
 %   UserVar: User Variables (Ua structure)
@@ -21,7 +22,7 @@
 %   h: ice thickness (MUA.Nnodes x 1)
 %   rhoi: ice density (scalar)
 %   rhow: water density (scalar)
-%   PICO_opts: structure containing various PICO options (details below)
+%   PICO_opts: optional structure containing various PICO options (details below)
 %
 %% PICO_opts ==============================================================
 %
@@ -113,3 +114,14 @@
 % - PICO_opts.persistentBC (DEFAULT = 0)
 % To avoid reordering mesh boundary coordinates every time PICO is called,
 % set this parameter to 1
+
+if nargin < 7
+    error('Some PICO inputs appear to be undefined');
+elseif nargin<8
+    warning('PICO_opts undefined, using only default values... ARE YOU SURE YOU WANT TO DO THIS?');
+    PICO_opts = struct;
+else
+    PICO_opts = varargin{1};
+end
+
+[Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(UserVar,CtrlVar,MUA,GF,h,rhoi,rhow,PICO_opts);

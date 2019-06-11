@@ -1,4 +1,4 @@
-function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(UserVar,CtrlVar,MUA,GF,h,rhoi,rhow,varargin)
+function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(UserVar,CtrlVar,MUA,GF,h,rhoi,rhow,PICO_opts)
 %
 % Usage:
 % [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rhoi,rhow,PICO_opts)
@@ -16,14 +16,6 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(UserVar,CtrlVar,MUA,
 %
 % type 'help PICO' for more details
 %
-if nargin < 7
-    error('Some PICO inputs appear to be undefined');
-elseif nargin<8
-    warning('PICO_opts undefined, using only default values... ARE YOU SURE YOU WANT TO DO THIS?');
-    PICO_opts = struct;
-else
-    PICO_opts = varargin{1};
-end
 
 PICO_opts = PICO_DefaultParameters(MUA,PICO_opts);
 
@@ -75,7 +67,6 @@ if PICO_opts.InfoLevel>10
     fprintf('Plotting delineated ice shelves...\n');
     x = MUA.coordinates(:,1); y = MUA.coordinates(:,2);
     figure(809);
-    title('Shelf IDs');
     PlotGroundingLines(CtrlVar,MUA,GF,[],[],[],'k');
     hold on;
     PlotMeshScalarVariable(CtrlVar, MUA, ShelfID);
@@ -87,15 +78,16 @@ if PICO_opts.InfoLevel>10
         average_y_loc_per_shelf(shelf_i) = mean(y(ShelfID==shelf_i));
         text(mean(x(ShelfID==shelf_i))/1000,mean(y(ShelfID==shelf_i))/1000,num2str(shelf_i));
     end
+    title('Shelf IDs');
     
     fprintf('Plotting ice shelf boxes...\n');
     figure(811);
-    title('Box Numbers');
     PlotGroundingLines(CtrlVar,MUA,GF,[],[],[],'k');
     hold on;
     tempBoxID = PBOX; tempBoxID(tempBoxID==0) = NaN;
     PlotMeshScalarVariable(CtrlVar, MUA, tempBoxID);
     colormap(summer(PICO_opts.nmax));
+    title('Box Numbers');
 end
 
 % ========================= input from box b0 =====================
@@ -247,7 +239,17 @@ Mk = Mk_ms .* 86400 .* 365.25; % m per a
 Mk(~floating) = 0;
 Mk(isnan(ShelfID) & floating) = PICO_opts.SmallShelfMelt;
 
-if PICO_opts.InfoLevel>0
+if PICO_opts.InfoLevel>10
+    fprintf('\n');
+    fprintf('----------|----------------|--------|---------|--------|----------|----------|----------|\n');
+    fprintf('Shelf no. |   Shelf Area   |  T0    |   S0    | Tfront |  Sfront  |  max ab  |  min ab  |\n');
+    fprintf('----------| ---------------|--------|---------|--------|----------|----------|----------|\n');
+    for ii = 1:max(ShelfID)
+        fprintf('    %2i    | %14.7g | %6.3g | %7.4g | %6.3g | %7.4g  | %8.5g | %8.5g |\n',ii,sum(Ak(ii,:)),T0(ii),S0(ii),Tkm(max(PBOX(ShelfID==ii)))...
+            ,Skm(max(PBOX(ShelfID==ii))),max(Mk(ShelfID==ii)),min(Mk(ShelfID==ii)));
+    end
+    fprintf('----------|----------------|--------|---------|--------|----------|----------|----------|\n');
+elseif PICO_opts.InfoLevel>0
     fprintf('PICO run complete, ice shelves have max, mean and min melt rates of %-g,  %-g,  %-g, respectively. \n',max(Mk),mean(Mk),min(Mk));
 end
 
@@ -281,6 +283,8 @@ if PICO_opts.InfoLevel>10
         average_melting_per_shelf(shelf_i) = sum(Int(ShelfID_per_ele==shelf_i))/sum(Areas(ShelfID_per_ele==shelf_i));
         text(average_x_loc_per_shelf(shelf_i)/1000,average_y_loc_per_shelf(shelf_i)/1000, num2str(round(average_melting_per_shelf(shelf_i),2)) );
     end
+    
+    title('PICO melt rates');
 end
 
 
