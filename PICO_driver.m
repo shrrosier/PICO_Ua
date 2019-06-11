@@ -27,13 +27,13 @@ end
 
 PICO_opts = PICO_DefaultParameters(MUA,PICO_opts);
 
-if numel(rhoi) > 1
+if numel(rhoi) > 0
     if PICO_opts.InfoLevel>0
         warning('non scalar rhoi, averaging...');
     end
     rhoi = mean(rhoi);
 end
-if numel(rhow) > 1
+if numel(rhow) > 0
     if PICO_opts.InfoLevel>0
         warning('non scalar rhow, averaging...');
     end

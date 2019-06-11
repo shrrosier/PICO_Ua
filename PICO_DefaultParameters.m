@@ -12,24 +12,45 @@ if ~isfield(PICO_opts,'InfoLevel')
 end
 if ~isfield(PICO_opts,'algorithm')
     PICO_opts.algorithm = 'watershed';
+    if PICO_opts.InfoLevel>1
+        fprintf('PICO algorithm undefined, defaulting to watershed\n');
+    end
 end
 if ~isfield(PICO_opts,'FloatingCriteria')
     PICO_opts.FloatingCriteria = 'GLthreshold';
+    if PICO_opts.InfoLevel>10
+        fprintf('Floating Criterion undefined, using GLthreshold\n');
+    end
 end
 if ~isfield(PICO_opts,'C1')
     PICO_opts.C1 = 1e6;
+    if PICO_opts.InfoLevel>1
+        warning('Overturning strength undefined, using C = 1e6\n');
+    end
 end
 if ~isfield(PICO_opts,'gamTstar')
     PICO_opts.gamTstar = 2e-5;
+    if PICO_opts.InfoLevel>1
+        warning('Turbulent temperature exchange velocity undefined , using gamTstar = 2e-5\n');
+    end
 end
 if ~isfield(PICO_opts,'nmax')
     PICO_opts.nmax = 5;
+        if PICO_opts.InfoLevel>10
+        fprintf('Using Default number of boxes (5)\n');
+    end
 end
 if ~isfield(PICO_opts,'minArea')
     PICO_opts.minArea = 2e9;
+    if PICO_opts.InfoLevel>1
+        warning('Using default shelf area cutoff of 2e9, shelves smaller will be ignored!\n');
+    end
 end
 if ~isfield(PICO_opts,'minNumShelf')
     PICO_opts.minNumShelf = 20;
+        if PICO_opts.InfoLevel>1
+        warning('Using default shelf size cutoff of 20, shelves smaller will be ignored!\n');
+    end
 end
 if ~isfield(PICO_opts,'SmallShelfMelt')
     PICO_opts.SmallShelfMelt = 0;
