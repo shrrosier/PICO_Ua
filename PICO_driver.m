@@ -47,13 +47,13 @@ switch PICO_opts.algorithm
             fprintf('Using watershed algorithm to deliniate ice shelves...\n');
         end
         
-        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesWatershedOption(UserVar,CtrlVar,MUA,GF,PICO_opts.PICOres,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax,PICO_opts.FloatingCriteria);
+        [ShelfID,PBOX,Ak,floating] = PICO_IdentifyIceShelvesWatershedOption(UserVar,CtrlVar,MUA,GF,PICO_opts.PICOres,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax,PICO_opts.FloatingCriteria);
         
     case 'polygon'
         if PICO_opts.InfoLevel>1
             fprintf('Using polygon algorithm to deliniate ice shelves...\n');
         end
-        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(UserVar,CtrlVar,MUA,GF,PICO_opts);
+        [ShelfID,PBOX,Ak,floating] = PICO_IdentifyIceShelvesPolygonOption(UserVar,CtrlVar,MUA,GF,PICO_opts);
     otherwise
         error('Invalid algorithm, choose either "watershed" or "polygon"');
 end
@@ -62,7 +62,7 @@ end
 if PICO_opts.InfoLevel>1
     fprintf('Calculating temperature and salinity for box 0...\n');
 end
-[T0,S0] = GetOceanInputFromBox0(UserVar,CtrlVar,MUA,GF,ShelfID,PICO_opts);
+[T0,S0] = PICO_GetOceanInputFromBox0(UserVar,CtrlVar,MUA,GF,ShelfID,PICO_opts);
 
 % ========================= physics ===============================
 % options to specify for PICO: C, gamTstar
