@@ -8,17 +8,26 @@ S0 = zeros(max(ShelfID),1);
 
 load(PICO_opts.BasinsFile); % Fbasins
 
+if ~strcmp(Fbasins.Method,'nearest')
+    Fbasins.Method = 'nearest';
+    Fbasins.ExtrapolationMethod = 'nearest';
+    warning('Changing basin interpolant to nearest neighbour to ensure unique values');
+end
+
 basins = Fbasins(MUA.coordinates(:,1), MUA.coordinates(:,2));
+
+unique_basins = unique(basins);
+Nbasins = numel(unique_basins);
 
 MUA2 = MUA;
 MUA2.nip = 1;
 TriArea = FEintegrate2D([],MUA2,ones(MUA.Nnodes,1));
 
 for ii = 1:max(ShelfID)
-    Ak = zeros(PICO_opts.Nbasins,1);
+    Ak = zeros(Nbasins,1);
     % calc the area of the ice shelf lying in each basin...
-    for basin_i = 1:PICO_opts.Nbasins
-        ind = ShelfID==ii & basins==basin_i;
+    for basin_i = 1:Nbasins
+        ind = ShelfID==ii & basins==unique_basins(basin_i);
         Ak(basin_i)=sum(TriArea(ind));
     end
     T0(ii) = dot(PICO_opts.Tbasins, 1/sum(Ak)*Ak);

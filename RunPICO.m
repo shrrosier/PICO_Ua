@@ -8,7 +8,7 @@ load MeshBoundaryCoordinates.mat
 %%
 % Run PICO:
 PICO_opts = struct;
-PICO_opts.algorithm = 'watershed';%'polygon';
+PICO_opts.algorithm = 'polygon';%'polygon';
 PICO_opts.C1 = 1e6;
 PICO_opts.gamTstar = 2e-5;
 PICO_opts.nmax = 5;
@@ -17,7 +17,7 @@ PICO_opts.minNumShelf = 20;
 PICO_opts.SmallShelfMelt = 0;
 PICO_opts.PICOres = 5000;
 PICO_opts.BasinsFile = 'BasinsInterpolant.mat';
-PICO_opts.FloatingCriteria = 'StrictDownstream'; %'GLthreshold' or 'StrictDownstream'
+PICO_opts.FloatingCriteria = 'GLthreshold'; %'GLthreshold' or 'StrictDownstream'
 PICO_opts.persistentBC = 0;
 PICO_opts.InfoLevel = 100; % 0,1,10,100
 

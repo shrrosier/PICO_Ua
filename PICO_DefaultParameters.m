@@ -62,7 +62,6 @@ if ~isfield(PICO_opts,'BasinsFile')
     Fbasins = scatteredInterpolant(x,y,ones(MUA.Nnodes,1));
     save('DefaultBasinsInterpolant.mat', 'Fbasins');
     PICO_opts.BasinsFile = 'DefaultBasinsInterpolant.mat';
-    PICO_opts.Nbasins = 1;
     if PICO_opts.InfoLevel>0
         warning('Basins file missing, setting everything to one basin');
     end
