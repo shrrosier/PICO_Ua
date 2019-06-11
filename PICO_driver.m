@@ -65,6 +65,10 @@ switch PICO_opts.algorithm
         error('Invalid algorithm, choose either "watershed" or "polygon"');
 end
 
+if PICO_opts.InfoLevel>0
+    fprintf('%s algorithm completed, found %2i ice shelves in the domain\n',PICO_opts.algorithm,max(ShelfID));
+end
+
 
 if PICO_opts.InfoLevel>10
     
@@ -242,6 +246,10 @@ Mk_ms = (-gamTstar./(mu*lambda)).*(a1.*Sk + b1 - c1.*pk - Tk); % m per s
 Mk = Mk_ms .* 86400 .* 365.25; % m per a
 Mk(~floating) = 0;
 Mk(isnan(ShelfID) & floating) = PICO_opts.SmallShelfMelt;
+
+if PICO_opts.InfoLevel>0
+    fprintf('PICO run complete, ice shelves have max, mean and min melt rates of %-g,  %-g,  %-g, respectively. \n',max(Mk),mean(Mk),min(Mk));
+end
 
 if PICO_opts.InfoLevel>10
     fprintf('Plotting PICO melt rates for all ice shelves...\n');
