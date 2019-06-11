@@ -239,19 +239,6 @@ Mk = Mk_ms .* 86400 .* 365.25; % m per a
 Mk(~floating) = 0;
 Mk(isnan(ShelfID) & floating) = PICO_opts.SmallShelfMelt;
 
-if PICO_opts.InfoLevel>10
-    fprintf('\n');
-    fprintf('----------|----------------|--------|---------|--------|----------|----------|----------|\n');
-    fprintf('Shelf no. |   Shelf Area   |  T0    |   S0    | Tfront |  Sfront  |  max ab  |  min ab  |\n');
-    fprintf('----------| ---------------|--------|---------|--------|----------|----------|----------|\n');
-    for ii = 1:max(ShelfID)
-        fprintf('    %2i    | %14.7g | %6.3g | %7.4g | %6.3g | %7.4g  | %8.5g | %8.5g |\n',ii,sum(Ak(ii,:)),T0(ii),S0(ii),Tkm(max(PBOX(ShelfID==ii)))...
-            ,Skm(max(PBOX(ShelfID==ii))),max(Mk(ShelfID==ii)),min(Mk(ShelfID==ii)));
-    end
-    fprintf('----------|----------------|--------|---------|--------|----------|----------|----------|\n');
-elseif PICO_opts.InfoLevel>0
-    fprintf('PICO run complete, ice shelves have max, mean and min melt rates of %-g,  %-g,  %-g, respectively. \n',max(Mk),mean(Mk),min(Mk));
-end
 
 if PICO_opts.InfoLevel>10
     fprintf('Plotting PICO melt rates for all ice shelves...\n');
@@ -285,6 +272,19 @@ if PICO_opts.InfoLevel>10
     end
     
     title('PICO melt rates');
+    
+    
+    fprintf('\n');
+    fprintf('----------|----------------|--------|---------|---------|---------|----------|----------|\n');
+    fprintf('Shelf no. |   Shelf Area   |  T0    |   S0    | Tfront  |  Sfront |  avg ab  |  q       |\n');
+    fprintf('----------| ---------------|--------|---------|---------|---------|----------|----------|\n');
+    for ii = 1:max(ShelfID)
+        fprintf('    %2i    | %14.7g | %7.3g | %6.4g | %7.3g | %6.4g  | %8.5g | %8.3g |\n',ii,sum(Ak(ii,:)),T0(ii),S0(ii),Tkm(ii,max(PBOX(ShelfID==ii)))...
+            ,Skm(ii,max(PBOX(ShelfID==ii))),average_melting_per_shelf(ii),q(ii));
+    end
+    fprintf('----------| ---------------|--------|---------|---------|---------|----------|----------|\n');
+elseif PICO_opts.InfoLevel>0
+    fprintf('PICO run complete, ice shelves have max, mean and min melt rates of %-g,  %-g,  %-g, respectively. \n',max(Mk),mean(Mk),min(Mk));
 end
 
 
