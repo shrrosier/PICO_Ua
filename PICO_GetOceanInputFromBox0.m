@@ -1,4 +1,4 @@
-function [T0,S0]=GetOceanInputFromBox0(UserVar,CtrlVar,MUA,GF,ShelfID,PICO_opts)
+function [T0,S0]=PICO_GetOceanInputFromBox0(UserVar,CtrlVar,MUA,GF,ShelfID,PICO_opts)
 % Calculate the ocean input for each ice shelf from the ocean input 
 % values per basin, weighted with the area of the ice shelf within that
 % basin
