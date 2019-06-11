@@ -7,6 +7,8 @@ function [MeanEleValues]=SNodes2EleMean(connectivity,NodalValues)
     [Nele,nod]=size(connectivity);
     MeanEleValues=max(reshape(NodalValues(connectivity),Nele,nod),[],2);
     ind = any(MeanEleValues~=0,2) & any(MeanEleValues==0,2);
+    if sum(ind)>0
     MeanEleValues(ind,:) = mean(MeanEleValues(ind,:)~=0);
+    end
     
 end
