@@ -65,6 +65,35 @@ switch PICO_opts.algorithm
         error('Invalid algorithm, choose either "watershed" or "polygon"');
 end
 
+
+if PICO_opts.InfoLevel>10
+    
+    fprintf('Plotting delineated ice shelves...\n');
+    x = MUA.coordinates(:,1); y = MUA.coordinates(:,2);
+    figure(809);
+    title('Shelf IDs');
+    PlotGroundingLines(CtrlVar,MUA,GF,[],[],[],'k');
+    hold on;
+    PlotMeshScalarVariable(CtrlVar, MUA, ShelfID);
+    colormap('lines')
+    colorbar off
+    
+    for shelf_i=1:max(ShelfID)
+        average_x_loc_per_shelf(shelf_i) = mean(x(ShelfID==shelf_i));
+        average_y_loc_per_shelf(shelf_i) = mean(y(ShelfID==shelf_i));
+        text(mean(x(ShelfID==shelf_i))/1000,mean(y(ShelfID==shelf_i))/1000,num2str(shelf_i));
+    end
+    
+    fprintf('Plotting ice shelf boxes...\n');
+    figure(811);
+    title('Box Numbers');
+    PlotGroundingLines(CtrlVar,MUA,GF,[],[],[],'k');
+    hold on;
+    tempBoxID = PBOX; tempBoxID(tempBoxID==0) = NaN;
+    PlotMeshScalarVariable(CtrlVar, MUA, tempBoxID);
+    colormap(summer(PICO_opts.nmax));
+end
+
 % ========================= input from box b0 =====================
 if PICO_opts.InfoLevel>1
     fprintf('Calculating temperature and salinity for box 0...\n');
@@ -213,6 +242,38 @@ Mk_ms = (-gamTstar./(mu*lambda)).*(a1.*Sk + b1 - c1.*pk - Tk); % m per s
 Mk = Mk_ms .* 86400 .* 365.25; % m per a
 Mk(~floating) = 0;
 Mk(isnan(ShelfID) & floating) = PICO_opts.SmallShelfMelt;
+
+if PICO_opts.InfoLevel>10
+    fprintf('Plotting PICO melt rates for all ice shelves...\n');
+    
+    decimals = 2; % number of decimal places that should be displayed +1
+    Mk_log = sign(Mk).*log10(abs(Mk)*10^decimals);
+    figure(821); hold all;
+    PlotMeshScalarVariable(CtrlVar, MUA, Mk_log);
+    cbar = colorbar; caxis([-log10(0.1*10^decimals) log10(30*10^decimals)]);
+    cbar.Label.String = 'sub-shelf melting (m/a)';
+    cbar.TickLabels = {'-0.1' ,'0', '0.1', '1', '5', '10', '30'};
+    cbar.Ticks = [-log10(0.1*10^decimals) 0  log10(0.1*10^decimals)  log10(1*10^decimals) log10(5*10^decimals) log10(10*10^decimals) log10(30*10^decimals)];
+    PlotGroundingLines(CtrlVar, MUA, GF); PlotBoundary(MUA.Boundary,MUA.connectivity,MUA.coordinates,CtrlVar);
+    
+    % aggregate melt rates over the ice shelves (first guess, ignore the area of the elements)
+    
+    ShelfID_per_ele = nanmean(ShelfID(MUA.connectivity),2);
+    Int=FEintegrate2D([],MUA,Mk); % integrate melt rate over elements
+    Areas = TriAreaFE(MUA.coordinates,MUA.connectivity); % get the area of each triangle
+    number_of_shelves = max(ShelfID);
+    
+    average_melting_per_shelf = zeros(number_of_shelves,1);
+    average_x_loc_per_shelf   = zeros(number_of_shelves,1);
+    average_y_loc_per_shelf   = zeros(number_of_shelves,1);
+    
+    for shelf_i=1:number_of_shelves
+        average_x_loc_per_shelf(shelf_i) = mean(x(ShelfID==shelf_i));
+        average_y_loc_per_shelf(shelf_i) = mean(y(ShelfID==shelf_i));
+        average_melting_per_shelf(shelf_i) = sum(Int(ShelfID_per_ele==shelf_i))/sum(Areas(ShelfID_per_ele==shelf_i));
+        text(average_x_loc_per_shelf(shelf_i)/1000,average_y_loc_per_shelf(shelf_i)/1000, num2str(round(average_melting_per_shelf(shelf_i),2)) );
+    end
+end
 
 
     function p_coeff = get_p(g1,s1)

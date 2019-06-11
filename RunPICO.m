@@ -31,58 +31,6 @@ PICO_opts.MeshBoundaryCoordinates = MeshBoundaryCoordinates;
 
 tic
 
-[Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVarInRestartFile,MUA,GF,F.h,median(F.rho),F.rhow,PICO_opts);
+[Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(1,CtrlVarInRestartFile,MUA,GF,F.h,median(F.rho),F.rhow,PICO_opts);
 
 toc
-
-
-% Infos from profiling: 
-% Running "watershed", res 1000: Elapsed time is 45.102403 seconds.
-% Running "watershed", res 3000: Elapsed time is  6.471619 seconds.
-% Running "watershed", res 6000: Elapsed time is  2.838979 seconds.
-% Running 
-
-
-%% Create figures:
-
-decimals = 2; % number of decimal places that should be displayed +1
-
-Mk_log = sign(Mk).*log10(abs(Mk)*10^decimals);
-
-%
-figure; hold all;
-PlotMeshScalarVariable(CtrlVarInRestartFile, MUA, Mk_log);
-cbar = colorbar; caxis([-log10(0.1*10^decimals) log10(30*10^decimals)]);
-cbar.Label.String = 'sub-shelf melting (m/a)';
-cbar.TickLabels = {'-0.1' ,'0', '0.1', '1', '5', '10', '30'};
-cbar.Ticks = [-log10(0.1*10^decimals) 0  log10(0.1*10^decimals)  log10(1*10^decimals) log10(5*10^decimals) log10(10*10^decimals) log10(30*10^decimals)];
-PlotGroundingLines(CtrlVarInRestartFile, MUA, GF); PlotBoundary(MUA.Boundary,MUA.connectivity,MUA.coordinates,CtrlVarInRestartFile);
-
-%% aggregate melt rates over the ice shelves (first guess, ignore the area of the elements)
-
-ShelfID_per_ele = nanmean(ShelfID(MUA.connectivity),2);
-Int=FEintegrate2D([],MUA,Mk); % integrate melt rate over elements
-Areas = TriAreaFE(MUA.coordinates,MUA.connectivity); % get the area of each triangle
-
-% FIXME: not aggregated per region!!
-number_of_shelves = max(ShelfID);
-
-average_melting_per_shelf = zeros(number_of_shelves,1);
-average_x_loc_per_shelf   = zeros(number_of_shelves,1);
-average_y_loc_per_shelf   = zeros(number_of_shelves,1);
-
-for shelf_i=1:number_of_shelves
-
-    average_x_loc_per_shelf(shelf_i) = mean(x(ShelfID==shelf_i));
-    average_y_loc_per_shelf(shelf_i) = mean(y(ShelfID==shelf_i));
-    
-    average_melting_per_shelf(shelf_i) = sum(Int(ShelfID_per_ele==shelf_i))/sum(Areas(ShelfID_per_ele==shelf_i));     
-    
-    % plot avreage melt rates 
-    text(average_x_loc_per_shelf(shelf_i)/1000,average_y_loc_per_shelf(shelf_i)/1000, num2str(round(average_melting_per_shelf(shelf_i),2)) );
-    
-end
-
-% %%
-% export_fig('Pico_melt_rates_polygon', '-dpdf', '-r400')
-
