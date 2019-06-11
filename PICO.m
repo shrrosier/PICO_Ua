@@ -1,5 +1,5 @@
 
-%% PICO melt rate parameterisation v0.61 ===================================
+%% PICO melt rate parameterisation v0.7 ===================================
 % An Ua implementation of the Potsdam Ice-shelf Cavity mOdel (PICO),
 % details of the model can be found in Reese et al. 2018
 % https://www.the-cryosphere.net/12/1969/2018/

@@ -45,7 +45,7 @@ if do_plots
     
     % boxes
     figure;
-    scatter(x,y,30,PBOX);
+    scatter(x,y,30,PBOX,'filled');
    % export_fig(strcat('Pico_boxes_',PICO_opts.algorithm), '-dpdf', '-r400')
     
     % log melting
@@ -64,6 +64,6 @@ if do_plots
     %%
    % export_fig(strcat('Pico_melt_rates_',PICO_opts.algorithm), '-dpdf', '-r400')
 
-end;
+end
 
 end
