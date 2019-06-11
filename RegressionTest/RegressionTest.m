@@ -15,7 +15,7 @@ Ua
 %% Run PICO 
 % adjust further options in RunPICO
 
-CallToPICO('polygon'); % 'polygon';
+CallToPICO('watershed'); % 'polygon';
 
 %% Compare to direct solution
 

@@ -1,4 +1,4 @@
-function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rhoi,rhow,varargin)
+function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(UserVar,CtrlVar,MUA,GF,h,rhoi,rhow,varargin)
 %
 % Usage:
 % [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rhoi,rhow,PICO_opts)
@@ -16,9 +16,9 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar,MUA,GF,h,rho
 %
 % type 'help PICO' for more details
 %
-if nargin < 6
+if nargin < 7
     error('Some PICO inputs appear to be undefined');
-elseif nargin<7
+elseif nargin<8
     warning('PICO_opts undefined, using only default values... ARE YOU SURE YOU WANT TO DO THIS?');
     PICO_opts = struct;
 else
@@ -47,13 +47,13 @@ switch PICO_opts.algorithm
             fprintf('Using watershed algorithm to deliniate ice shelves...\n');
         end
         
-        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,PICO_opts.PICOres,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax,PICO_opts.FloatingCriteria);
+        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesWatershedOption(UserVar,CtrlVar,MUA,GF,PICO_opts.PICOres,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax,PICO_opts.FloatingCriteria);
         
     case 'polygon'
         if PICO_opts.InfoLevel>1
             fprintf('Using polygon algorithm to deliniate ice shelves...\n');
         end
-        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,PICO_opts);
+        [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(UserVar,CtrlVar,MUA,GF,PICO_opts);
     otherwise
         error('Invalid algorithm, choose either "watershed" or "polygon"');
 end
@@ -62,7 +62,7 @@ end
 if PICO_opts.InfoLevel>1
     fprintf('Calculating temperature and salinity for box 0...\n');
 end
-[T0,S0] = GetOceanInputFromBox0(CtrlVar,MUA,GF,ShelfID,PICO_opts);
+[T0,S0] = GetOceanInputFromBox0(UserVar,CtrlVar,MUA,GF,ShelfID,PICO_opts);
 
 % ========================= physics ===============================
 % options to specify for PICO: C, gamTstar

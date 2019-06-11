@@ -25,7 +25,7 @@ PICO_opts.MeshBoundaryCoordinates = MeshBoundaryCoordinates;
 
 %tic
 
-[Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(CtrlVar, MUA, GF, F.h, median(F.rho),F.rhow, PICO_opts);
+[Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(1, CtrlVar, MUA, GF, F.h, median(F.rho),F.rhow, PICO_opts);
 
 %toc
 
@@ -45,7 +45,7 @@ if do_plots
     
     % boxes
     figure;
-    PlotMeshScalarVariable(CtrlVar, MUA, PBOX)
+    scatter(x,y,30,PBOX);
    % export_fig(strcat('Pico_boxes_',PICO_opts.algorithm), '-dpdf', '-r400')
     
     % log melting
@@ -54,7 +54,7 @@ if do_plots
     Mk_log = sign(Mk).*log10(abs(Mk)*10^decimals);
 
     figure; hold all;
-    PlotMeshScalarVariable(CtrlVar, MUA, Mk_log)
+    scatter(x,y,30,Mk_log,'filled');
     cbar = colorbar; caxis([-log10(0.1*10^decimals) log10(30*10^decimals)]);
     cbar.Label.String = 'sub-shelf melting (m/a)';
     cbar.TickLabels = {'-0.1' ,'0', '0.1', '1', '5', '10', '30'};

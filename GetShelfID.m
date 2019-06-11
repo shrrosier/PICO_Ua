@@ -1,4 +1,4 @@
-function [ShelfID,ShelfGLx2,ShelfGLy2,ShelfFrontx2,ShelfFronty2] = GetShelfID(CtrlVar, MUA, GF,PICO_opts)
+function [ShelfID,ShelfGLx2,ShelfGLy2,ShelfFrontx2,ShelfFronty2] = GetShelfID(UserVar, CtrlVar, MUA, GF,PICO_opts)
 % Identify each ice shelf with an individual ID number
 %
 % Example:

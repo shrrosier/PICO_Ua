@@ -1,5 +1,5 @@
 
-%% PICO melt rate parameterisation v0.6 ===================================
+%% PICO melt rate parameterisation v0.61 ===================================
 % An Ua implementation of the Potsdam Ice-shelf Cavity mOdel (PICO),
 % details of the model can be found in Reese et al. 2018
 % https://www.the-cryosphere.net/12/1969/2018/
@@ -62,9 +62,9 @@
 % Minimum number of floating nodes (polygon) or grid cells (watershed) for
 % a given region to be considered an ice shelf.
 %
-% - PICO_opts.warnings (DEFAULT = on)
-% Set PICO_opts.warnings = 'off' to stop printing warning messages related
-% to missing fields in the PICO structure
+% - PICO_opts.InfoLevel (DEFAULT = 100)
+% Same functionality as CtrlVar.InfoLevel, choose between 0,1,10,100 with 
+% higher InfoLevels providing more information during the PICO run.
 %
 % -------------------------------------------------------------------------
 % Options related to the ambient ocean properties: 

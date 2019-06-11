@@ -1,4 +1,4 @@
-function [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(CtrlVar,MUA,GF,PICO_opts)
+function [ShelfID,PBOX,Ak,floating] = IdentifyIceShelvesPolygonOption(UserVar,CtrlVar,MUA,GF,PICO_opts)
 
 nmax = PICO_opts.nmax;
 
@@ -7,7 +7,7 @@ if PICO_opts.InfoLevel>10
     fprintf('Calling GetShelfID...\n');
 end
 
-[ShelfID,ShelfGLx,ShelfGLy,ShelfFrontx,ShelfFronty] = GetShelfID(CtrlVar, MUA, GF, PICO_opts);
+[ShelfID,ShelfGLx,ShelfGLy,ShelfFrontx,ShelfFronty] = GetShelfID(UserVar, CtrlVar, MUA, GF, PICO_opts);
 if PICO_opts.InfoLevel>10
     fprintf('Polygon option ran successfully and defined %2i ice shelves\n',max(ShelfID));
 end

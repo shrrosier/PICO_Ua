@@ -1,4 +1,4 @@
-function [ShelfNum,BoxID,Ak,floating] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,PICOres,minArea,minNumS,nmax,FloatingCriteria)
+function [ShelfNum,BoxID,Ak,floating] = IdentifyIceShelvesWatershedOption(UserVar,CtrlVar,MUA,GF,PICOres,minArea,minNumS,nmax,FloatingCriteria)
 %
 % Function to generate unique shelf IDs with corresponding areas,
 % subdivided into boxes using the method described in Reese (2018).
