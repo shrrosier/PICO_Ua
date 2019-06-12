@@ -66,24 +66,6 @@ if ~isfield(PICO_opts,'BasinsFile')
         warning('Basins file missing, setting everything to one basin');
     end
 end
-if ~isfield(PICO_opts, 'Nbasins')
-    load(PICO_opts.BasinsFile)
-    PICO_opts.Nbasins = max(Fbasins(x,y));
-end
-if ~isfield(PICO_opts,'Tbasins')
-    defaultT = -1.8; % deg C
-    PICO_opts.Tbasins = zeros(PICO_opts.Nbasins,1)+defaultT;
-    if PICO_opts.InfoLevel>0
-        warning(strcat('Ocean input vector is missing, setting temperatures in all basins to ',num2str(defaultT), ' degree C.'));
-    end
-end
-if ~isfield(PICO_opts,'Sbasins')
-    defaultS = 33.8; % psu
-    PICO_opts.Sbasins = zeros(PICO_opts.Nbasins,1)+defaultS;
-    if PICO_opts.InfoLevel>0
-        warning(strcat('Ocean input vector is missing, setting salinities in all basins to ',num2str(defaultS), ' psu.'));
-    end
-end
 
 if ~isfield(PICO_opts,'PICOres') && strcmp(PICO_opts.algorithm,'watershed')
     % try to make a sensible choice about resolution vs speed

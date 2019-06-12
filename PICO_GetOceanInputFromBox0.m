@@ -19,6 +19,25 @@ basins = Fbasins(MUA.coordinates(:,1), MUA.coordinates(:,2));
 unique_basins = unique(basins);
 Nbasins = numel(unique_basins);
 
+if ~isfield(PICO_opts,'Tbasins')
+    defaultT = -1.8; % deg C
+    PICO_opts.Tbasins = zeros(Nbasins,1)+defaultT;
+    if PICO_opts.InfoLevel>0
+        warning(strcat('Ocean input vector is missing, setting temperatures in all basins to ',num2str(defaultT), ' degree C.'));
+    end
+end
+if ~isfield(PICO_opts,'Sbasins')
+    defaultS = 33.8; % psu
+    PICO_opts.Sbasins = zeros(Sbasins,1)+defaultS;
+    if PICO_opts.InfoLevel>0
+        warning(strcat('Ocean input vector is missing, setting salinities in all basins to ',num2str(defaultS), ' psu.'));
+    end
+end
+
+if numel(PICO_opts.Sbasins)~=Nbasins 
+    error('Length of Salinity vector must equal number of basins');
+end
+
 MUA2 = MUA;
 MUA2.nip = 1;
 TriArea = FEintegrate2D([],MUA2,ones(MUA.Nnodes,1));

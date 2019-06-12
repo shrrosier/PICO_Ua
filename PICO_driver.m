@@ -19,13 +19,13 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(UserVar,CtrlVar,MUA,
 
 PICO_opts = PICO_DefaultParameters(MUA,PICO_opts);
 
-if numel(rhoi) > 0
+if numel(rhoi) > 1
     if PICO_opts.InfoLevel>0
         warning('non scalar rhoi, averaging...');
     end
     rhoi = mean(rhoi);
 end
-if numel(rhow) > 0
+if numel(rhow) > 1
     if PICO_opts.InfoLevel>0
         warning('non scalar rhow, averaging...');
     end
@@ -270,7 +270,7 @@ if PICO_opts.InfoLevel>10
         average_melting_per_shelf(shelf_i) = sum(Int(ShelfID_per_ele==shelf_i))/sum(Areas(ShelfID_per_ele==shelf_i));
         text(average_x_loc_per_shelf(shelf_i)/1000,average_y_loc_per_shelf(shelf_i)/1000, num2str(round(average_melting_per_shelf(shelf_i),2)) );
     end
-    
+    % CtrlVar.PlotXYscale
     title('PICO melt rates');
     
     
