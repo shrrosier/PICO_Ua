@@ -275,9 +275,9 @@ if PICO_opts.InfoLevel>10
     
     
     fprintf('\n');
-    fprintf('----------|----------------|--------|---------|---------|---------|----------|----------|\n');
-    fprintf('Shelf no. |   Shelf Area   |  T0    |   S0    | Tfront  |  Sfront |  avg ab  |  q       |\n');
-    fprintf('----------| ---------------|--------|---------|---------|---------|----------|----------|\n');
+    fprintf('----------|----------------|---------|--------|---------|---------|----------|----------|\n');
+    fprintf('Shelf no. |   Shelf Area   |   T0    |   S0   | Tfront  |  Sfront |  avg ab  |  q       |\n');
+    fprintf('----------| ---------------|---------|--------|---------|---------|----------|----------|\n');
     for ii = 1:max(ShelfID)
         fprintf('    %2i    | %14.7g | %7.3g | %6.4g | %7.3g | %6.4g  | %8.5g | %8.3g |\n',ii,sum(Ak(ii,:)),T0(ii),S0(ii),Tkm(ii,max(PBOX(ShelfID==ii)))...
             ,Skm(ii,max(PBOX(ShelfID==ii))),average_melting_per_shelf(ii),q(ii));
