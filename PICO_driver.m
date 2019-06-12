@@ -70,7 +70,7 @@ if PICO_opts.InfoLevel>10
     PlotGroundingLines(CtrlVar,MUA,GF,[],[],[],'k');
     hold on;
     PlotMeshScalarVariable(CtrlVar, MUA, ShelfID);
-    colormap('lines')
+    colormap(lines(max(ShelfID)))
     colorbar off
     
     for shelf_i=1:max(ShelfID)

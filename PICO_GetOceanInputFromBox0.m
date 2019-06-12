@@ -28,7 +28,7 @@ if ~isfield(PICO_opts,'Tbasins')
 end
 if ~isfield(PICO_opts,'Sbasins')
     defaultS = 33.8; % psu
-    PICO_opts.Sbasins = zeros(Sbasins,1)+defaultS;
+    PICO_opts.Sbasins = zeros(Nbasins,1)+defaultS;
     if PICO_opts.InfoLevel>0
         warning(strcat('Ocean input vector is missing, setting salinities in all basins to ',num2str(defaultS), ' psu.'));
     end
