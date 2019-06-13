@@ -58,6 +58,12 @@ if ~isfield(PICO_opts,'SmallShelfMelt')
         warning('Applying default zero melt to floating nodes outside of delineated shelves, change this in PICO_opts.SmallShelfMelt');
     end
 end
+if ~isfield(PICO_opts,'ContinentArea')
+    PICO_opts.ContinentArea = 1e9;
+    if PICO_opts.InfoLevel>0
+        warning('Applying default area for definition of continental GL, change this in PICO_opts.ContinentArea');
+    end
+end
 if ~isfield(PICO_opts,'BasinsFile')
     Fbasins = scatteredInterpolant(x,y,ones(MUA.Nnodes,1));
     save('DefaultBasinsInterpolant.mat', 'Fbasins');
