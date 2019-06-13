@@ -49,7 +49,7 @@ dGL = ShelfID;
 
 for ii = 1:numel(x)
     ShelfID(ii) = max([ws(y2(ii),x2(ii)) ws(y2(ii)+1,x2(ii)) ws(y2(ii),x2(ii)+1) ws(y2(ii)+1,x2(ii)+1)]);
-    dGL(ii) = max([dGLmat(y2(ii),x2(ii)) dGLmat(y2(ii)+1,x2(ii)) dGLmat(y2(ii),x2(ii)+1) dGLmat(y2(ii)+1,x2(ii)+1)]) .* PICOres;
+    dGL(ii) = min([dGLmat(y2(ii),x2(ii)) dGLmat(y2(ii)+1,x2(ii)) dGLmat(y2(ii),x2(ii)+1) dGLmat(y2(ii)+1,x2(ii)+1)]) .* PICOres;
 end
 
 % possibly add here - if any triangle has a node beloning to an ice shelf
