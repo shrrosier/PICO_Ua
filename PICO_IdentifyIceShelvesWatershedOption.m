@@ -1,4 +1,4 @@
-function [ShelfNum,BoxID,Ak,floating] = PICO_IdentifyIceShelvesWatershedOption(UserVar,CtrlVar,MUA,GF,PICOres,minArea,minNumS,nmax,FloatingCriteria)
+function [ShelfNum,BoxID,Ak,floating] = PICO_IdentifyIceShelvesWatershedOption(UserVar,CtrlVar,MUA,GF,PICOres,minArea,minNumS,nmax,FloatingCriteria,continent_area)
 %
 % Function to generate unique shelf IDs with corresponding areas,
 % subdivided into boxes using the method described in Reese (2018).
@@ -30,7 +30,9 @@ grounded_regions = bwlabel(Zi>0.99,8);
 gr_vec = reshape(grounded_regions,[],1);
 [num_occur,ind] = hist(gr_vec,unique(gr_vec));
 
-gdGL = num_occur>1000 & ind'>0; %ignore background (b=0)
+continent_cutoff = continent_area/PICOres^2;
+
+gdGL = num_occur>continent_cutoff & ind'>0; %ignore background (b=0)
 gdGLind = ind(gdGL);
 
 loc1 = ismember(grounded_regions,gdGLind); %matrix where 1 = 'continental' grounded ice and 0 is islands/ocean/ice shelf
@@ -38,14 +40,16 @@ loc1 = ismember(grounded_regions,gdGLind); %matrix where 1 = 'continental' groun
 dGLmat = bwdist(loc1);
 x = MUA.coordinates(:,1); y= MUA.coordinates(:,2);
 
+%x2 and y2 are coordinates of bottom left corner of pixels
 x2 = floor((x-min(x))./PICOres) + 1;
 y2 = floor((y-min(y))./PICOres) + 1;
+
 ShelfID = zeros(MUA.Nnodes,1);
 dGL = ShelfID;
 
 for ii = 1:numel(x)
-    ShelfID(ii) = ws(y2(ii),x2(ii));
-    dGL(ii) = dGLmat(y2(ii),x2(ii)) .* PICOres;
+    ShelfID(ii) = max([ws(y2(ii),x2(ii)) ws(y2(ii)+1,x2(ii)) ws(y2(ii),x2(ii)+1) ws(y2(ii)+1,x2(ii)+1)]);
+    dGL(ii) = max([dGLmat(y2(ii),x2(ii)) dGLmat(y2(ii)+1,x2(ii)) dGLmat(y2(ii),x2(ii)+1) dGLmat(y2(ii)+1,x2(ii)+1)]) .* PICOres;
 end
 
 % possibly add here - if any triangle has a node beloning to an ice shelf
@@ -87,7 +91,7 @@ end
 
 %% this section calculates distances from ice fronts for each shelf
 FloatingBoundaryNodes=MUA.Boundary.Nodes(GF.node(MUA.Boundary.Nodes)<0.5);
-dIF = unShelfID*0;
+dIF = zeros(numel(ShelfNum),1);
 
 for ii = 1:max(ShelfNum) % calculate  dIF for each ice shelf
     xBox = x(ShelfNum==ii);
