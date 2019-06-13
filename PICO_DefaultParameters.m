@@ -34,9 +34,6 @@ if ~isfield(PICO_opts,'gamTstar')
         warning('Turbulent temperature exchange velocity undefined , using gamTstar = 2e-5\n');
     end
 end
-if ~isfield(PICO_opts,'FillHoles')
-    PICO_opts.FillHoles = false;
-end
 if ~isfield(PICO_opts,'nmax')
     PICO_opts.nmax = 5;
         if PICO_opts.InfoLevel>10

@@ -1,4 +1,4 @@
-function [ShelfNum,BoxID,Ak,floating] = PICO_IdentifyIceShelvesWatershedOption(UserVar,CtrlVar,MUA,GF,PICOres,minArea,minNumS,nmax,FloatingCriteria,FillHoles)
+function [ShelfNum,BoxID,Ak,floating] = PICO_IdentifyIceShelvesWatershedOption(UserVar,CtrlVar,MUA,GF,PICOres,minArea,minNumS,nmax,FloatingCriteria)
 %
 % Function to generate unique shelf IDs with corresponding areas,
 % subdivided into boxes using the method described in Reese (2018).
@@ -36,31 +36,16 @@ gdGLind = ind(gdGL);
 loc1 = ismember(grounded_regions,gdGLind); %matrix where 1 = 'continental' grounded ice and 0 is islands/ocean/ice shelf
 
 dGLmat = bwdist(loc1);
-
-if FillHoles % if there are holes inside your mesh these will need filling otherwise they are treated as ice fronts
-    
-    grid_holes = bwfill(in,'holes');
-    grid_noholes = ~grid_holes;
-    dIFmat = bwdist(grid_noholes);
-    
-else
-
-    dIFmat = bwdist(~in);
-
-end
-
 x = MUA.coordinates(:,1); y= MUA.coordinates(:,2);
 
 x2 = floor((x-min(x))./PICOres) + 1;
 y2 = floor((y-min(y))./PICOres) + 1;
 ShelfID = zeros(MUA.Nnodes,1);
-dIF = ShelfID;
-dGL = dIF;
+dGL = ShelfID;
 
 for ii = 1:numel(x)
     ShelfID(ii) = ws(y2(ii),x2(ii));
-    dGL(ii) = dGLmat(y2(ii),x2(ii));
-    dIF(ii) = dIFmat(y2(ii),x2(ii));
+    dGL(ii) = dGLmat(y2(ii),x2(ii)) .* PICOres;
 end
 
 % possibly add here - if any triangle has a node beloning to an ice shelf
@@ -99,6 +84,17 @@ if max(ShelfID)==-1
     error('No valid ice shelves detected - check shelf size and shelf area cutoffs are sensible for your domain');
 end
 
+
+%% this section calculates distances from ice fronts for each shelf
+FloatingBoundaryNodes=MUA.Boundary.Nodes(GF.node(MUA.Boundary.Nodes)<0.5);
+dIF = unShelfID*0;
+
+for ii = 1:max(ShelfNum) % calculate  dIF for each ice shelf
+    xBox = x(ShelfNum==ii);
+    yBox = y(ShelfNum==ii);
+    [~, D] = knnsearch([x(FloatingBoundaryNodes) y(FloatingBoundaryNodes)],[xBox yBox]); % distance of every shelf node to calving front
+    dIF(ShelfNum==ii) = D;
+end
 
 %% now calculate the box numbers for each ice shelf
 

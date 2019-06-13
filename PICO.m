@@ -104,11 +104,6 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO(UserVar,CtrlVar,MUA,GF,h,rh
 % this can potentially slow things down a lot and a higher number (lower
 % resolution) typically seems to work fine.
 % 
-% - PICO_opts.FillHoles (DEFAULT = false) the watershed algorithm
-% calculates distance to the ice front and gl using the bwdist function and
-% any interior holes to the mesh could cause this to fail, so setting this
-% option to should fix any issues.
-%
 % -------------------------------------------------------------------------
 % Options specific to PICO_opts.algorithm = 'polygon'
 %
