@@ -1,4 +1,4 @@
-function [ShelfNum,BoxID,Ak,floating] = PICO_IdentifyIceShelvesWatershedOption(UserVar,CtrlVar,MUA,GF,PICOres,minArea,minNumS,nmax,FloatingCriteria)
+function [ShelfNum,BoxID,Ak,floating] = PICO_IdentifyIceShelvesWatershedOption(UserVar,CtrlVar,MUA,GF,PICOres,minArea,minNumS,nmax,FloatingCriteria,FillHoles)
 %
 % Function to generate unique shelf IDs with corresponding areas,
 % subdivided into boxes using the method described in Reese (2018).
@@ -25,14 +25,42 @@ notshelf = Zi>0.99 | ~in;
 inshelf = ~notshelf;
 ws = bwlabel(inshelf,8);
 % CC = bwconncomp(inshelf,8); ws = labelmatrix(CC);  this seems to be slower
+
+grounded_regions = bwlabel(Zi>0.99,8);
+gr_vec = reshape(grounded_regions,[],1);
+[num_occur,ind] = hist(gr_vec,unique(gr_vec));
+
+gdGL = num_occur>1000 & ind'>0; %ignore background (b=0)
+gdGLind = ind(gdGL);
+
+loc1 = ismember(grounded_regions,gdGLind); %matrix where 1 = 'continental' grounded ice and 0 is islands/ocean/ice shelf
+
+dGLmat = bwdist(loc1);
+
+if FillHoles % if there are holes inside your mesh these will need filling otherwise they are treated as ice fronts
+    
+    grid_holes = bwfill(in,'holes');
+    grid_noholes = ~grid_holes;
+    dIFmat = bwdist(grid_noholes);
+    
+else
+
+    dIFmat = bwdist(~in);
+
+end
+
 x = MUA.coordinates(:,1); y= MUA.coordinates(:,2);
 
 x2 = floor((x-min(x))./PICOres) + 1;
 y2 = floor((y-min(y))./PICOres) + 1;
 ShelfID = zeros(MUA.Nnodes,1);
+dIF = ShelfID;
+dGL = dIF;
 
 for ii = 1:numel(x)
     ShelfID(ii) = ws(y2(ii),x2(ii));
+    dGL(ii) = dGLmat(y2(ii),x2(ii));
+    dIF(ii) = dIFmat(y2(ii),x2(ii));
 end
 
 % possibly add here - if any triangle has a node beloning to an ice shelf
@@ -71,42 +99,6 @@ if max(ShelfID)==-1
     error('No valid ice shelves detected - check shelf size and shelf area cutoffs are sensible for your domain');
 end
 
-
-%% this section calculates distances from GLs and ice fronts for each shelf
-FloatingBoundaryNodes=MUA.Boundary.Nodes(GF.node(MUA.Boundary.Nodes)<0.5);
-dIF = unShelfID*0;
-dGL = dIF;
-
-
-for ii = 1:max(ShelfNum) % calculate dGL and dIF for each ice shelf
-    
-    xBox = x(ShelfNum==ii);
-    yBox = y(ShelfNum==ii);
-    [~, D] = knnsearch([x(FloatingBoundaryNodes) y(FloatingBoundaryNodes)],[xBox yBox]); % distance of every shelf node to calving front
-    dIF(ShelfNum==ii) = D;
-    
-    % Calculate distance from GL... this potentially will slow things a
-    % lot
-    
-    % option 1: use boundary to get bounding nodes for each ice shelf and
-    % then exclude those nodes that are also part of MUA.Boundary.Nodes
-    % then use knnsearch on this much smaller subset of nodes to get
-    % distance
-    % advantage of removing islands within an ice shelf
-    
-    k = boundary(xBox,yBox,1);
-    te=setdiff(k,find(D==0)); % instead of this... ensure node is not part of the same element as a node on the boundary
-    [~, D2] = knnsearch([xBox(te) yBox(te)],[xBox yBox]); % distance of every shelf node to GL
-    dGL(ShelfNum==ii) = D2;
-    
-    % option 2: just search over all GL nodes
-    % this is actually faster but need a way to get rid of islands from
-    % the search
-    %     [~, D2] = knnsearch([x(GLnodes) y(GLnodes)],[xBox yBox]); % distance of every shelf node to calving front
-    %     dGL(PBOX==ii) = D2;
-    
-
-end
 
 %% now calculate the box numbers for each ice shelf
 
