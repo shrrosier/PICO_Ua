@@ -14,8 +14,8 @@ switch FloatingCriteria
     otherwise
         error('Invalid value for PICO_opts.FloatingCriteria');
 end
-ShelfNum = floating;
-
+ShelfNum = double(floating);
+ShelfNum(ShelfNum==0) = NaN;
 
 %% this section calculates distances from GLs and ice fronts for each shelf
 FloatingBoundaryNodes=MUA.Boundary.Nodes(GF.node(MUA.Boundary.Nodes)<0.5);
