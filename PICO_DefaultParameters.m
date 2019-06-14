@@ -64,15 +64,11 @@ if ~isfield(PICO_opts,'ContinentArea')
         warning('Applying default area for definition of continental GL, change this in PICO_opts.ContinentArea');
     end
 end
-if ~isfield(PICO_opts,'BasinsFile')
-    Fbasins = scatteredInterpolant(x,y,ones(MUA.Nnodes,1));
-    save('DefaultBasinsInterpolant.mat', 'Fbasins');
-    PICO_opts.BasinsFile = 'DefaultBasinsInterpolant.mat';
+if ~isfield(PICO_opts,'BasinsInterpolant')
     if PICO_opts.InfoLevel>0
-        warning('Basins file missing, setting everything to one basin');
+        warning('Basins interpolant missing, setting everything to one basin');
     end
 end
-
 if ~isfield(PICO_opts,'PICOres') && strcmp(PICO_opts.algorithm,'watershed')
     % try to make a sensible choice about resolution vs speed
     if MUA.Nnodes > 200e3

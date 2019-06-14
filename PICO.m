@@ -74,11 +74,12 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO(UserVar,CtrlVar,MUA,GF,h,rh
 % -------------------------------------------------------------------------
 % Options related to the ambient ocean properties: 
 %
-% - PICO_opts.BasinsFile: Where the user wants to have multiple ocean
-% basins with different properties, this should be the name of a .mat file
-% containing a scatteredInterpolant covering the entire domain and numbered
-% from 1 to n, where n is the maximum number of ocean basins. See Reese et
-% al (2018) for an example of how to define the ocean basins. If 
+% - PICO_opts.BasinsInterpolant: Where the user wants to have multiple ocean
+% basins with different properties, this should be a scatteredInterpolant 
+% covering the entire domain and numbered from 1 to n, where n is the maximum 
+% number of ocean basins. See Reese et al (2018) for an example of how to 
+% define the ocean basins. If this is empty the model will assume only one
+% basin in the entire domain (and hence use only one T0 and S0).
 % 
 % - PICO_opts.Tbasins: A vector of length n, where each element (i) of
 % Tbasins is the ambient ocean temperature of basin number (i). If no
