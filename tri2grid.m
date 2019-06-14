@@ -23,16 +23,16 @@ y = MUA.coordinates(:,2);
 
 %since the total area is presumably not divisible by the chosen
 %resolution this next part is needed...
-dx = max(x)-min(x);
-numx = ceil(dx/res);
-xdiff = rem(numx*res,dx)/2;
-dy = max(y)-min(y);
-numy = ceil(dy/res);
-ydiff = rem(numy*res,dy)/2;
+% dx = max(x)-min(x);
+% numx = ceil(dx/res);
+% xdiff = rem(numx*res,dx)/2 + res/2;
+% dy = max(y)-min(y);
+% numy = ceil(dy/res);
+% ydiff = rem(numy*res,dy)/2 + res/2;
 
 % xg and yg are the coordinates of the corners of each pixel in the image
-xg = min(x)-xdiff:res:max(x)+xdiff;
-yg = min(y)-ydiff:res:max(y)+ydiff;
+xg = min(x):res:max(x)+res;
+yg = min(y):res:max(y)+res;
 [Xi,Yi] = meshgrid(xg,yg);
 
 xx = reshape(Xi,[],1);

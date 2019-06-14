@@ -8,6 +8,7 @@ S0 = zeros(max(ShelfID),1);
 
 if ~isfield(PICO_opts,'BasinsInterpolant')
     basins = ones(MUA.Nnodes,1);
+    Nbasins = 1;
 else
     if ~strcmp(PICO_opts.BasinsInterpolant.Method,'nearest')
         PICO_opts.BasinsInterpolant.Method = 'nearest';
@@ -15,10 +16,10 @@ else
         warning('Changing basin interpolant to nearest neighbour to ensure unique values');
     end
     basins = PICO_opts.BasinsInterpolant(MUA.coordinates(:,1), MUA.coordinates(:,2));
+    Nbasins = max(max(PICO_opts.BasinsInterpolant.Values));
 end
 
-unique_basins = unique(basins);
-Nbasins = numel(unique_basins);
+unique_basins = 1:Nbasins;
 
 if ~isfield(PICO_opts,'Tbasins')
     defaultT = -1.8; % deg C
