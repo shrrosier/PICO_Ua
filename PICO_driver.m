@@ -152,6 +152,27 @@ pcoeff = get_p(gk(:,1),s1);
 for ii = 1:max(ShelfID)
     
     ind = ShelfID==ii & PBOX == 1;
+    
+    % for very low resolution some ice shelves may not have a box # 1, this
+    % while loop should fix that issue
+    if sum(ind)==0
+        while true
+            PBOX(ShelfID==ii) = PBOX(ShelfID==ii)-1;
+            ind = ShelfID==ii & PBOX == 1;
+            % once this is fixed I need to recalculate mskBox and pctBox
+            if sum(ind)>0
+                for ii2 = 1:nmax
+                    Nind = PBOX ==ii2;
+                    msk = double(Nind(MUA.connectivity));
+                    pctBox{ii2} = sum(msk,2)./3;
+                    msk(msk==0) = nan;
+                    mskBox{ii2} = msk;
+                end
+                break
+            end
+        end
+    end
+    
     indE = ShelfIDEle==ii;
     
     pb = pctBox{1}(indE);
