@@ -21,17 +21,8 @@ function [Xi,Yi,Zi,in] = tri2grid(MUA,Fin,res)
 x = MUA.coordinates(:,1);
 y = MUA.coordinates(:,2);
 
-%since the total area is presumably not divisible by the chosen
-%resolution this next part is needed...
-% dx = max(x)-min(x);
-% numx = ceil(dx/res);
-% xdiff = rem(numx*res,dx)/2 + res/2;
-% dy = max(y)-min(y);
-% numy = ceil(dy/res);
-% ydiff = rem(numy*res,dy)/2 + res/2;
-
 % xg and yg are the coordinates of the corners of each pixel in the image
-xg = min(x):res:max(x)+res;
+xg = min(x):res:max(x)+res; % need to go beyond the domain for reasons
 yg = min(y):res:max(y)+res;
 [Xi,Yi] = meshgrid(xg,yg);
 
