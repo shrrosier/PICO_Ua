@@ -76,7 +76,7 @@ if PICO_opts.InfoLevel>10
     for shelf_i=1:max(ShelfID)
         average_x_loc_per_shelf(shelf_i) = mean(x(ShelfID==shelf_i));
         average_y_loc_per_shelf(shelf_i) = mean(y(ShelfID==shelf_i));
-        text(mean(x(ShelfID==shelf_i))/1000,mean(y(ShelfID==shelf_i))/1000,num2str(shelf_i));
+        text(mean(x(ShelfID==shelf_i))/CtrlVar.PlotXYscale,mean(y(ShelfID==shelf_i))/CtrlVar.PlotXYscale,num2str(shelf_i));
     end
     title('Shelf IDs');
     
@@ -289,7 +289,7 @@ if PICO_opts.InfoLevel>10
         average_x_loc_per_shelf(shelf_i) = mean(x(ShelfID==shelf_i));
         average_y_loc_per_shelf(shelf_i) = mean(y(ShelfID==shelf_i));
         average_melting_per_shelf(shelf_i) = sum(Int(ShelfID_per_ele==shelf_i))/sum(Areas(ShelfID_per_ele==shelf_i));
-        text(average_x_loc_per_shelf(shelf_i)/1000,average_y_loc_per_shelf(shelf_i)/1000, num2str(round(average_melting_per_shelf(shelf_i),2)) );
+        text(average_x_loc_per_shelf(shelf_i)/CtrlVar.PlotXYscale,average_y_loc_per_shelf(shelf_i)/CtrlVar.PlotXYscale, num2str(round(average_melting_per_shelf(shelf_i),2)) );
     end
     % CtrlVar.PlotXYscale
     title('PICO melt rates');
