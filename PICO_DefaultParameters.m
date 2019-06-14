@@ -1,6 +1,4 @@
 function PICO_opts = PICO_DefaultParameters(MUA,PICO_opts)
-x = MUA.coordinates(:,1);
-y = MUA.coordinates(:,2);
 
 if ~exist('PICO_opts','var')
     warning('PICO_opts undefined, using default values... ARE YOU SURE YOU WANT TO DO THIS?');
