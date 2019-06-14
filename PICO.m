@@ -1,6 +1,6 @@
 function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO(UserVar,CtrlVar,MUA,GF,h,rhoi,rhow,varargin)
 
-%% PICO melt rate parameterisation v0.7 ===================================
+%% PICO melt rate parameterisation v0.8 ===================================
 % An Ua implementation of the Potsdam Ice-shelf Cavity mOdel (PICO),
 % details of the model can be found in Reese et al. 2018
 % https://www.the-cryosphere.net/12/1969/2018/
@@ -30,12 +30,13 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO(UserVar,CtrlVar,MUA,GF,h,rh
 % available when running the PICO model. It is not strictly necessary to
 % define this structure when calling PICO but it is highly recommended,
 % particularly for problem specific fields e.g. related to the ambient
-% ocean fields. 
+% ocean fields. In particular, think carefully about your choices for the
+% basins interpolant, temperature/salinity fields, C1 and gamTstar.
 % -------------------------------------------------------------------------
 % General options:
 %
 % - PICO_opts.algorithm: 'watershed', 'polygon' or 'oneshelf' (DEFAULT = 'watershed')
-% There are two options related to how ice shelves are delineated. The
+% There are options related to how ice shelves are delineated. The
 % 'watershed' options converts MUA into a structured grid and then uses
 % image processing techniques to quickly define connected floating regions
 % as individual ice shelves. The 'polygon' option creates polygons out of
