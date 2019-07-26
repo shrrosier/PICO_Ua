@@ -1,12 +1,12 @@
-function [ShelfNum,BoxID,Ak,floating] = PICO_IdentifyIceShelvesWatershedOption(UserVar,CtrlVar,MUA,GF,PICOres,minArea,minNumS,nmax,FloatingCriteria,continent_area)
+function [ShelfNum,BoxID,Ak,floating] = PICO_IdentifyIceShelvesWatershedOption(UserVar,CtrlVar,MUA,GF,PICO_opts)
 %
 % Function to generate unique shelf IDs with corresponding areas,
 % subdivided into boxes using the method described in Reese (2018).
 %
-% Usage: [ShelfNum,BoxID,ShelfArea] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,PICOres,minArea,minNumS,nmax)
+% Usage: [ShelfNum,BoxID,ShelfArea] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,PICO_opts.PICOres,PICO_opts.minArea,minNumS,nmax)
 %
-% PICOres = 10000; % the resolution used in the watershed algorithm, lower numbers will be slower but will capture more detailed ice shelf geometries that might be missed otherwise
-% minArea = 2e9; % minimum ice shelf area in m^2 - lower numbers may slow code quite significantly
+% PICO_opts.PICOres = 10000; % the resolution used in the watershed algorithm, lower numbers will be slower but will capture more detailed ice shelf geometries that might be missed otherwise
+% PICO_opts.minArea = 2e9; % minimum ice shelf area in m^2 - lower numbers may slow code quite significantly
 % minNumS = 20; % minimum number of floating nodes needed to be considered
 % an ice shelf, this is only needed to deal with a few cases where an ice shelf may cover a large area in the structured grid but only actually consist of a few nodes
 % nmax= 5; % maximum number of boxes per ice shelf
@@ -15,10 +15,10 @@ function [ShelfNum,BoxID,Ak,floating] = PICO_IdentifyIceShelvesWatershedOption(U
 %% this section calculates a unique ID for each shelf using the watershed function
 
 % PICOres = 10000; % the resolution used in the watershed algorithm, will potentially slow things down a lot if this is increased
-% minArea = 1e9; % minimum shelf area in m^2
+% PICO_opts.minArea = 1e9; % minimum shelf area in m^2
 % nmax= 5; % maximum number of boxes per ice shelf
 
-[~,~,Zi,in] = tri2grid(MUA,GF.node,PICOres);
+[~,~,Zi,in] = tri2grid(MUA,GF.node,PICO_opts.PICOres);
 
 notshelf = Zi>0.99 | ~in;
 % ws = watershed(notshelf); %bwlabel seems to do a better and MUCH faster job
@@ -30,7 +30,7 @@ grounded_regions = bwlabel(Zi>0.99,8);
 gr_vec = reshape(grounded_regions,[],1);
 [num_occur,ind] = hist(gr_vec,unique(gr_vec));
 
-continent_cutoff = continent_area/PICOres^2;
+continent_cutoff = PICO_opts.ContinentArea/PICO_opts.PICOres^2;
 
 gdGL = num_occur>continent_cutoff & ind'>0; %ignore background (b=0)
 gdGLind = ind(gdGL);
@@ -41,22 +41,22 @@ dGLmat = bwdist(loc1);
 x = MUA.coordinates(:,1); y= MUA.coordinates(:,2);
 
 %x2 and y2 are coordinates of bottom left corner of pixels
-x2 = floor((x-min(x))./PICOres) + 1;
-y2 = floor((y-min(y))./PICOres) + 1;
+x2 = floor((x-min(x))./PICO_opts.PICOres) + 1;
+y2 = floor((y-min(y))./PICO_opts.PICOres) + 1;
 
 ShelfID = zeros(MUA.Nnodes,1);
 dGL = ShelfID;
 
 for ii = 1:numel(x)
     ShelfID(ii) = max([ws(y2(ii),x2(ii)) ws(y2(ii)+1,x2(ii)) ws(y2(ii),x2(ii)+1) ws(y2(ii)+1,x2(ii)+1)]);
-    dGL(ii) = min([dGLmat(y2(ii),x2(ii)) dGLmat(y2(ii)+1,x2(ii)) dGLmat(y2(ii),x2(ii)+1) dGLmat(y2(ii)+1,x2(ii)+1)]) .* PICOres;
+    dGL(ii) = min([dGLmat(y2(ii),x2(ii)) dGLmat(y2(ii)+1,x2(ii)) dGLmat(y2(ii),x2(ii)+1) dGLmat(y2(ii)+1,x2(ii)+1)]) .* PICO_opts.PICOres;
 end
 
 % possibly add here - if any triangle has a node beloning to an ice shelf
 % then make all nodes of that triangle belong to the same ice shelf (this
 % will hopefully deal with some edge issues
 
-switch FloatingCriteria
+switch PICO_opts.FloatingCriteria
     case 'GLthreshold'
     floating = GF.node < CtrlVar.GLthreshold;
     case 'StrictDownstream'
@@ -72,9 +72,9 @@ ws2 = ws; ws2(notshelf)=nan; ws2 = reshape(ws2,[],1);
 numshelf = histc(ws2,1:max(max(ws2)));
 numshelf2 = histc(ShelfID,1:max(ShelfID));
 
-minNumG = round(minArea/PICOres^2);
+minNumG = round(PICO_opts.minArea/PICO_opts.PICOres^2);
 badShelf1 = find(numshelf<minNumG);
-badShelf2 = find(numshelf2<minNumS);
+badShelf2 = find(numshelf2<PICO_opts.minNumShelf);
 badShelf = union(badShelf1,badShelf2);
 idx = ismember(ShelfID,badShelf); % find the indices of shelves considered bad
 ShelfID(idx) = -1; % replace the shelf ID in these locations
@@ -109,7 +109,7 @@ badBox = zeros(max(ShelfNum),1);
 for ii = 1:max(ShelfNum) %need a second loop because only now do we know dmax
     ind = ShelfNum==ii;
     dglmax = max(dGL(ind));
-    nD = 1 + round(sqrt(dglmax./dmax)*(nmax-1));
+    nD = 1 + round(sqrt(dglmax./dmax)*(PICO_opts.nmax-1));
     
     rbox = dGL(ind)./(dGL(ind)+dIF(ind));
     blnkBox = rbox*0;
@@ -149,6 +149,6 @@ end
 
 %% finally calculate the area of each box in each ice shelf
 
-Ak = PICO_calc_areas(MUA, BoxID, ShelfNum, nmax);
+Ak = PICO_calc_areas(MUA, BoxID, ShelfNum, PICO_opts.nmax);
 
 end

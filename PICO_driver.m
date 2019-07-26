@@ -39,7 +39,7 @@ switch PICO_opts.algorithm
             fprintf('Using watershed algorithm to deliniate ice shelves...\n');
         end
         
-        [ShelfID,PBOX,Ak,floating] = PICO_IdentifyIceShelvesWatershedOption(UserVar,CtrlVar,MUA,GF,PICO_opts.PICOres,PICO_opts.minArea,PICO_opts.minNumShelf,PICO_opts.nmax,PICO_opts.FloatingCriteria,PICO_opts.ContinentArea);
+        [ShelfID,PBOX,Ak,floating] = PICO_IdentifyIceShelvesWatershedOption(UserVar,CtrlVar,MUA,GF,PICO_opts);
         
     case 'polygon'
         if PICO_opts.InfoLevel>1
