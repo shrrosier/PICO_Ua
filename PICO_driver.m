@@ -138,10 +138,12 @@ ShelfIDEle = nanmean(ShelfID(MUA.connectivity),2);
 % ------------------------------
 % pctBox and mskBox are needed
 % for averaging values in boxes
+pctBox = cell(1,nmax); % the percent of every element that is contained in a box number given by the cell number ie cell one = box one
+mskBox = cell(1,nmax); % for every element, is one where that elements node is in a box and nan elsewhere
 for ii = 1:nmax
     Nind = PBOX ==ii;
     msk = double(Nind(MUA.connectivity));
-    pctBox{ii} = sum(msk,2)./3;
+    pctBox{ii} = sum(msk,2)./3; 
     msk(msk==0) = nan;
     mskBox{ii} = msk;
 end
