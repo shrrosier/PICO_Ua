@@ -33,6 +33,9 @@ gr_vec = reshape(grounded_regions,[],1);
 continent_cutoff = PICO_opts.ContinentArea/PICO_opts.PICOres^2;
 
 gdGL = num_occur>continent_cutoff & ind'>0; %ignore background (b=0)
+if sum(gdGL)==0
+    error('continent cutoff is too large, the default value is appropriate for the whole of Antarctica but not other domains so think carefully about what number to use!');
+end
 gdGLind = ind(gdGL);
 
 loc1 = ismember(grounded_regions,gdGLind); %matrix where 1 = 'continental' grounded ice and 0 is islands/ocean/ice shelf

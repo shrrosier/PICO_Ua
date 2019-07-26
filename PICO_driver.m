@@ -54,11 +54,11 @@ switch PICO_opts.algorithm
         [ShelfID,PBOX,Ak,floating] = PICO_MakeBoxesOneShelf(UserVar,CtrlVar,MUA,GF,PICO_opts);
         
     otherwise
-        error('Invalid algorithm, choose either "watershed" or "polygon"');
+        error('Invalid algorithm, choose either "watershed", "polygon" or "oneshelf"');
 end
 
 if PICO_opts.InfoLevel>0
-    fprintf('%s algorithm completed, found %2i ice shelves in the domain\n',PICO_opts.algorithm,max(ShelfID));
+    fprintf('%s algorithm completed, found %3i ice shelves in the domain\n',PICO_opts.algorithm,max(ShelfID));
 end
 
 
@@ -133,7 +133,7 @@ if PICO_opts.InfoLevel>1
 end
 
 Areas=TriAreaFE(MUA.coordinates,MUA.connectivity);
-ShelfIDEle = nanmean(ShelfID(MUA.connectivity),2);
+ShelfIDEle = round(nanmean(ShelfID(MUA.connectivity),2));
 
 % ------------------------------
 % pctBox and mskBox are needed
@@ -154,35 +154,12 @@ pcoeff = get_p(gk(:,1),s1);
 for ii = 1:max(ShelfID)
     
     ind = ShelfID==ii & PBOX == 1;
-    
-    % for very low resolution some ice shelves may not have a box # 1, this
-    % while loop should fix that issue
-    if sum(ind)==0
-        while true
-            PBOX(ShelfID==ii) = PBOX(ShelfID==ii)-1;
-            ind = ShelfID==ii & PBOX == 1;
-            % once this is fixed I need to recalculate mskBox and pctBox
-            if sum(ind)>0
-                for ii2 = 1:nmax
-                    Nind = PBOX ==ii2;
-                    msk = double(Nind(MUA.connectivity));
-                    pctBox{ii2} = sum(msk,2)./3;
-                    msk(msk==0) = nan;
-                    mskBox{ii2} = msk;
-                end
-                break
-            end
-        end
-    end
-    
     indE = ShelfIDEle==ii;
     
     pb = pctBox{1}(indE);
-    mb = mskBox{1}(indE,:);
     ar = Areas(indE);
-    BA = sum(pb.*ar);
-    
-    
+    BA = Ak(ii,1);
+
     Tstar(ind) = calc_tstar(S0(ii),T0(ii),pk(ind));
     if any(Tstar(ind) > 0) % equivalent to: if T0 < T_pmp
         % ensure that temperature input to box 1 is at least at pressure melting point
@@ -201,10 +178,10 @@ for ii = 1:max(ShelfID)
     Sk(ind) = S0(ii) - (S0(ii)/(mu*lambda)) * (T0(ii) - Tk(ind));
     
     vals = nanmean(mskBox{1}.*Sk(MUA.connectivity),2);
-    Skm(ii,1) = nansum(vals(indE).*ar.*pb)./BA;
+    Skm(ii,1) = nansum(vals(indE).*ar.*pb)./BA; % mean salinity for box 1
     
     vals = nanmean(mskBox{1}.*Tk(MUA.connectivity),2);
-    Tkm(ii,1) = nansum(vals(indE).*ar.*pb)./BA;
+    Tkm(ii,1) = nansum(vals(indE).*ar.*pb)./BA; % mean temperature for box 1
     
 end
 
@@ -230,8 +207,7 @@ for ii = 1:max(ShelfID)
         ind = ShelfID==ii & PBOX == jj;
         
         pb = pctBox{jj}(indE);
-        mb = mskBox{jj}(indE,:);
-        BA = sum(pb.*ar);
+        BA = Ak(ii,jj);
         
         Tstar = calc_tstar(Skm(ii,jj-1),Tkm(ii,jj-1),pk(ind)); % calculate with Sk and Tk of box-1 but using local pk
         
