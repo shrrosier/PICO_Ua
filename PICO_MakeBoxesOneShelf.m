@@ -74,16 +74,5 @@ BoxID = zeros(size(dGL));
 
 
 %% finally calculate the area of each box in each ice shelf
+Ak = PICO_calc_areas(MUA, BoxID, ShelfNum, nmax);
 
-Ak = zeros(max(ShelfNum),nmax);
-
-PBoxEle=ceil(SNodes2EleMean(MUA.connectivity,BoxID));
-ShelfIDEle = round(SNodes2EleMean(MUA.connectivity,ShelfNum));
-[Areas,~,~,~]=TriAreaFE(MUA.coordinates,MUA.connectivity);
-
-% Each row of Ak is a unique shelf and each column is a box number within
-% that shelf, each element of Ak is the total area of a box in a shelf
-    for k = 1:nmax
-        ind = ShelfIDEle==1 & PBoxEle==k;
-        Ak(1,k) = sum(Areas(ind));
-    end

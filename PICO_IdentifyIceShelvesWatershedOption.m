@@ -118,7 +118,7 @@ for ii = 1:max(ShelfNum) %need a second loop because only now do we know dmax
         p1 = 1-sqrt((nD-k+1)/nD);
         p2 = 1-sqrt((nD-k)/nD);
         blnkBox(p1 <= rbox & rbox <= p2) = k;
-        if k == 1 & sum(blnkBox==1) ==0 % this checks if any ice shelves are missing box #1 which might occasionally happen for various reasons
+        if k == 1 && sum(blnkBox==1) ==0 % this checks if any ice shelves are missing box #1 which might occasionally happen for various reasons
             warning('Ice Shelf %03i is missing a box ID # 1, this might be because of problems with PICO options, in particular check the continent cutoff value',ii);
             badBox(ii) = 1;
         end
@@ -130,6 +130,9 @@ end
 
 % if any shelves don't have a box # 1, this loop renumbers the boxes so
 % until there is at least one node in box # 1
+%
+% I don't think it's possible for an ice shelf to skip a box number ie have
+% a box # 1 and # 3 but no box #2
 if any(badBox==1)
     badInds = find(badBox==1);
     for ii = 1:numel(badInds)
@@ -144,25 +147,8 @@ if any(badBox==1)
     end
 end
 
-        
-    
-
 %% finally calculate the area of each box in each ice shelf
 
-Ak = zeros(max(ShelfNum),nmax);
-
-PBoxEle=ceil(SNodes2EleMean(MUA.connectivity,BoxID));
-ShelfIDEle = round(SNodes2EleMean(MUA.connectivity,ShelfNum));
-[Areas,~,~,~]=TriAreaFE(MUA.coordinates,MUA.connectivity);
-
-% Each row of Ak is a unique shelf and each column is a box number within
-% that shelf, each element of Ak is the total area of a box in a shelf
-for ii = 1:max(ShelfNum)
-    for k = 1:nmax
-       ind = ShelfIDEle==ii & PBoxEle==k;
-       Ak(ii,k) = sum(Areas(ind));
-    end
-end
-
+Ak = PICO_calc_areas(MUA, BoxID, ShelfNum, nmax);
 
 end

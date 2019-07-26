@@ -77,22 +77,12 @@ end
 
 %% THIS SECTION DETERMINES THE BOX AREAS
 
-PBoxEle=round(SNodes2EleMean(MUA.connectivity,blnkBox));
-ShelfIDEle = round(SNodes2EleMean(MUA.connectivity,ShelfID));
-[Areas,~,~,~]=TriAreaFE(MUA.coordinates,MUA.connectivity);
 
 if PICO_opts.InfoLevel>10
     fprintf('Calculating the area of each box...');
 end
 
-% Each row of Ak is a unique shelf and each column is a box number within
-% that shelf, each element of Ak is the total area of a box in a shelf
-for ii = 1:max(ShelfID)
-    for k = 1:nmax
-       ind = ShelfIDEle==ii & PBoxEle==k;
-       Ak(ii,k) = sum(Areas(ind));
-    end
-end
+Ak = PICO_calc_areas(MUA, blnkBox, ShelfID, nmax);
 
 if PICO_opts.InfoLevel>10
     fprintf('Success!\n');
