@@ -104,6 +104,7 @@ end
 
 dmax = max(dGL);
 BoxID = zeros(size(dGL));
+badBox = zeros(max(ShelfNum),1);
 
 for ii = 1:max(ShelfNum) %need a second loop because only now do we know dmax
     ind = ShelfNum==ii;
@@ -117,11 +118,34 @@ for ii = 1:max(ShelfNum) %need a second loop because only now do we know dmax
         p1 = 1-sqrt((nD-k+1)/nD);
         p2 = 1-sqrt((nD-k)/nD);
         blnkBox(p1 <= rbox & rbox <= p2) = k;
+        if k == 1 & sum(blnkBox==1) ==0 % this checks if any ice shelves are missing box #1 which might occasionally happen for various reasons
+            warning('Ice Shelf %03i is missing a box ID # 1, this might be because of problems with PICO options, in particular check the continent cutoff value',ii);
+            badBox(ii) = 1;
+        end
     end
     
     BoxID(ind) = blnkBox;
     
 end
+
+% if any shelves don't have a box # 1, this loop renumbers the boxes so
+% until there is at least one node in box # 1
+if any(badBox==1)
+    badInds = find(badBox==1);
+    for ii = 1:numel(badInds)
+        ind = ShelfNum==badInds(ii) & BoxID == 1;
+         while sum(ind)==0
+            BoxID(ShelfNum==badInds(ii)) = BoxID(ShelfNum==badInds(ii))-1;
+            ind = ShelfNum==badInds(ii) & BoxID == 1;
+            if sum(ind)>0
+                badBox(badInds(ii)) = 0;
+            end
+         end
+    end
+end
+
+        
+    
 
 %% finally calculate the area of each box in each ice shelf
 
