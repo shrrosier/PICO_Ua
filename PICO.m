@@ -1,6 +1,6 @@
 function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO(UserVar,CtrlVar,MUA,GF,h,rhoi,rhow,varargin)
 
-%% PICO melt rate parameterisation v0.8 ===================================
+%% PICO melt rate parameterisation v0.9 ===================================
 % An Ua implementation of the Potsdam Ice-shelf Cavity mOdel (PICO),
 % details of the model can be found in Reese et al. 2018
 % https://www.the-cryosphere.net/12/1969/2018/
@@ -53,7 +53,7 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO(UserVar,CtrlVar,MUA,GF,h,rh
 % The melt rate applied to floating nodes that for whatever reason are not
 % within an ice shelf as determined by this code.
 %
-% - PICO_opts.FloatingCriteria: 'GLthreshold' or 'StrictDownstream' (DEFAULT = 'GLthreshold')
+% - PICO_opts.FloatingCriteria: 'GLthreshold' or 'StrictDownstream' (DEFAULT = 'StrictDownstream')
 % Melt is only applied at nodes that meet this floating criteria which is
 % either determined by CtrlVar.GLthreshold or nodes strictly downstream of
 % the grounding line.
@@ -105,6 +105,16 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO(UserVar,CtrlVar,MUA,GF,h,rh
 % The resolution of the structured grid that the watershed option uses,
 % this can potentially slow things down a lot and a higher number (lower
 % resolution) typically seems to work fine.
+%
+% - PICO_opts.ContinentArea (DEFAULT = 5e10)
+% This helps to identify the main grounding line of interest by setting an
+% area threshold below which grounded areas are treated as islands and
+% hence these grounding lines are ignored for the purposes of defining the
+% boxes. If you want to include all grounding lines then set this to 0 but
+% think carefully about your decision and check how this parameter affects
+% your box geometry. The default value is set so that a simulation for the
+% whole of Antarctica will include Alexander Island but ignore Berkner
+% island to replicate the behaviour of the PICO implementation in PISM.
 % 
 % -------------------------------------------------------------------------
 % Options specific to PICO_opts.algorithm = 'polygon'

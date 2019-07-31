@@ -15,7 +15,7 @@ if ~isfield(PICO_opts,'algorithm')
     end
 end
 if ~isfield(PICO_opts,'FloatingCriteria')
-    PICO_opts.FloatingCriteria = 'GLthreshold';
+    PICO_opts.FloatingCriteria = 'StrictDownstream';
     if PICO_opts.InfoLevel>10
         fprintf('Floating Criterion undefined, using GLthreshold\n');
     end
