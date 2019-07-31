@@ -1,22 +1,6 @@
 function [ShelfNum,BoxID,Ak,floating] = PICO_IdentifyIceShelvesWatershedOption(UserVar,CtrlVar,MUA,GF,PICO_opts)
-%
-% Function to generate unique shelf IDs with corresponding areas,
-% subdivided into boxes using the method described in Reese (2018).
-%
-% Usage: [ShelfNum,BoxID,ShelfArea] = IdentifyIceShelvesWatershedOption(CtrlVar,MUA,GF,PICO_opts.PICOres,PICO_opts.minArea,minNumS,nmax)
-%
-% PICO_opts.PICOres = 10000; % the resolution used in the watershed algorithm, lower numbers will be slower but will capture more detailed ice shelf geometries that might be missed otherwise
-% PICO_opts.minArea = 2e9; % minimum ice shelf area in m^2 - lower numbers may slow code quite significantly
-% minNumS = 20; % minimum number of floating nodes needed to be considered
-% an ice shelf, this is only needed to deal with a few cases where an ice shelf may cover a large area in the structured grid but only actually consist of a few nodes
-% nmax= 5; % maximum number of boxes per ice shelf
-
 
 %% this section calculates a unique ID for each shelf using the watershed function
-
-% PICOres = 10000; % the resolution used in the watershed algorithm, will potentially slow things down a lot if this is increased
-% PICO_opts.minArea = 1e9; % minimum shelf area in m^2
-% nmax= 5; % maximum number of boxes per ice shelf
 
 [~,~,Zi,in] = tri2grid(MUA,GF.node,PICO_opts.PICOres);
 
