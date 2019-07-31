@@ -42,10 +42,6 @@ for ii = 1:numel(x)
 %     dIF(ii) = min([dIFmat(y2(ii),x2(ii)) dIFmat(y2(ii)+1,x2(ii)) dIFmat(y2(ii),x2(ii)+1) dIFmat(y2(ii)+1,x2(ii)+1)]) .* PICO_opts.PICOres;
 end
 
-% possibly add here - if any triangle has a node beloning to an ice shelf
-% then make all nodes of that triangle belong to the same ice shelf (this
-% will hopefully deal with some edge issues
-
 switch PICO_opts.FloatingCriteria
     case 'GLthreshold'
     floating = GF.node < CtrlVar.GLthreshold;
