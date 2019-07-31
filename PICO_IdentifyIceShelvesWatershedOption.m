@@ -41,6 +41,7 @@ gdGLind = ind(gdGL);
 loc1 = ismember(grounded_regions,gdGLind); %matrix where 1 = 'continental' grounded ice and 0 is islands/ocean/ice shelf
 
 dGLmat = bwdist(loc1);
+% dIFmat = bwdist(~in);
 x = MUA.coordinates(:,1); y= MUA.coordinates(:,2);
 
 %x2 and y2 are coordinates of bottom left corner of pixels
@@ -49,10 +50,12 @@ y2 = floor((y-min(y))./PICO_opts.PICOres) + 1;
 
 ShelfID = zeros(MUA.Nnodes,1);
 dGL = ShelfID;
+% dIF = ShelfID;
 
 for ii = 1:numel(x)
     ShelfID(ii) = max([ws(y2(ii),x2(ii)) ws(y2(ii)+1,x2(ii)) ws(y2(ii),x2(ii)+1) ws(y2(ii)+1,x2(ii)+1)]);
     dGL(ii) = min([dGLmat(y2(ii),x2(ii)) dGLmat(y2(ii)+1,x2(ii)) dGLmat(y2(ii),x2(ii)+1) dGLmat(y2(ii)+1,x2(ii)+1)]) .* PICO_opts.PICOres;
+%     dIF(ii) = min([dIFmat(y2(ii),x2(ii)) dIFmat(y2(ii)+1,x2(ii)) dIFmat(y2(ii),x2(ii)+1) dIFmat(y2(ii)+1,x2(ii)+1)]) .* PICO_opts.PICOres;
 end
 
 % possibly add here - if any triangle has a node beloning to an ice shelf
@@ -95,11 +98,13 @@ end
 %% this section calculates distances from ice fronts for each shelf
 FloatingBoundaryNodes=MUA.Boundary.Nodes(GF.node(MUA.Boundary.Nodes)<0.5);
 dIF = zeros(numel(ShelfNum),1);
+NodeNums = 1:MUA.Nnodes';
 
 for ii = 1:max(ShelfNum) % calculate  dIF for each ice shelf
     xBox = x(ShelfNum==ii);
     yBox = y(ShelfNum==ii);
-    [~, D] = knnsearch([x(FloatingBoundaryNodes) y(FloatingBoundaryNodes)],[xBox yBox]); % distance of every shelf node to calving front
+    shelf_boundary = ismember(NodeNums(ShelfNum==ii),FloatingBoundaryNodes);
+    [~, D] = knnsearch([xBox(shelf_boundary) yBox(shelf_boundary)],[xBox yBox]); % distance of every shelf node to calving front
     dIF(ShelfNum==ii) = D;
 end
 
