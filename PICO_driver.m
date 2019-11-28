@@ -237,6 +237,7 @@ Mk_ms = (-gamTstar./(mu*lambda)).*(a1.*Sk + b1 - c1.*pk - Tk); % m per s
 Mk = Mk_ms .* 86400 .* 365.25; % m per a
 Mk(~floating) = 0;
 Mk(isnan(ShelfID) & floating) = PICO_opts.SmallShelfMelt;
+Mk = Mk.*-1; % by popular demand, use same convention as Ua
 
 
 if PICO_opts.InfoLevel>10

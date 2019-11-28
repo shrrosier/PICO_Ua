@@ -9,6 +9,9 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO(UserVar,CtrlVar,MUA,GF,h,rh
 % This is an Ua module intended to be called from within 'DefineMassBalance.m'
 % The main output is a melt rate, given in metres per year
 %
+% NOTE: This has been changed to use the same sign convention as Ua, i.e.
+% a negative number indicates basal melting and positive indicates freezing
+%
 % -------------------------------------------------------------------------
 % To run PICO, use the following syntax:
 %
