@@ -19,6 +19,11 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO_driver(UserVar,CtrlVar,MUA,
 
 PICO_opts = PICO_DefaultParameters(MUA,PICO_opts);
 
+if PICO_opts.InfoLevel == 0
+    warning off;
+end
+
+
 if numel(rhoi) > 1
     if PICO_opts.InfoLevel>0
         warning('non scalar rhoi, averaging...');
@@ -295,6 +300,10 @@ if PICO_opts.InfoLevel>10
     fprintf('----------| ---------------|--------|---------|---------|---------|----------|----------|\n');
 elseif PICO_opts.InfoLevel>0
     fprintf('PICO run complete, ice shelves have max, mean and min melt rates of %-g,  %-g,  %-g, respectively. \n',max(Mk.*-1),mean(Mk.*-1),min(Mk.*-1));
+end
+
+if PICO_opts.InfoLevel == 0
+    warning on;
 end
 
 
