@@ -41,6 +41,14 @@ switch PICO_opts.algorithm
         
         [ShelfID,PBOX,Ak,floating] = PICO_IdentifyIceShelvesWatershedOption(UserVar,CtrlVar,MUA,GF,PICO_opts);
         
+    case 'graph'
+        
+        if PICO_opts.InfoLevel>1
+            fprintf('Using graph algorithm to deliniate ice shelves...\n');
+        end
+        
+        [ShelfID,PBOX,Ak,floating] = PICO_IdentifyIceShelvesGraphOption(UserVar,CtrlVar,MUA,GF,PICO_opts);
+                
     case 'polygon'
         if PICO_opts.InfoLevel>1
             fprintf('Using polygon algorithm to deliniate ice shelves...\n');
@@ -67,16 +75,17 @@ if PICO_opts.InfoLevel>10
     fprintf('Plotting delineated ice shelves...\n');
     x = MUA.coordinates(:,1); y = MUA.coordinates(:,2);
     figure(809);
-    PlotGroundingLines(CtrlVar,MUA,GF,[],[],[],'k');
+    ShelfIDtemp = ShelfID; ShelfIDtemp(ShelfID==0) = nan;
+    PlotMeshScalarVariable(CtrlVar, MUA, ShelfIDtemp);
     hold on;
-    PlotMeshScalarVariable(CtrlVar, MUA, ShelfID);
+    PlotGroundingLines(CtrlVar,MUA,GF,[],[],[],'k');
     colormap(lines(max(ShelfID)))
     colorbar off
     
     for shelf_i=1:max(ShelfID)
         average_x_loc_per_shelf(shelf_i) = mean(x(ShelfID==shelf_i));
         average_y_loc_per_shelf(shelf_i) = mean(y(ShelfID==shelf_i));
-        text(mean(x(ShelfID==shelf_i))/CtrlVar.PlotXYscale,mean(y(ShelfID==shelf_i))/CtrlVar.PlotXYscale,num2str(shelf_i));
+        text(mean(x(ShelfID==shelf_i))/CtrlVar.PlotXYscale,mean(y(ShelfID==shelf_i))/CtrlVar.PlotXYscale,num2str(shelf_i),'Color','k','FontWeight','bold','FontSize',12,'BackgroundColor','w','Margin',0.1,'EdgeColor','r');
     end
     title('Shelf IDs');
     
@@ -86,7 +95,8 @@ if PICO_opts.InfoLevel>10
     hold on;
     tempBoxID = PBOX; tempBoxID(tempBoxID==0) = NaN;
     PlotMeshScalarVariable(CtrlVar, MUA, tempBoxID);
-    colormap(summer(PICO_opts.nmax));
+    boxmap = [27 158 119; 217 95 2; 117 112 179; 231 41 138; 102 166 30]./265;
+    colormap(boxmap);
     title('Box Numbers');
 end
 
@@ -243,14 +253,14 @@ Mk = Mk.*-1; % by popular demand, use same convention as Ua
 if PICO_opts.InfoLevel>10
     fprintf('Plotting PICO melt rates for all ice shelves...\n');
     
-    decimals = 2; % number of decimal places that should be displayed +1
+    decimals = 5; % number of decimal places that should be displayed +1
     Mk_log = sign(Mk).*log10(abs(Mk)*10^decimals);
     figure(821); hold all;
-    PlotMeshScalarVariable(CtrlVar, MUA, Mk_log);
-    cbar = colorbar; caxis([-log10(0.1*10^decimals) log10(30*10^decimals)]);
+    PlotMeshScalarVariable(CtrlVar, MUA, Mk_log);     colormap(flipud(jet))
+    cbar = colorbar; caxis([-log10(30*10^decimals) log10(0.1*10^decimals)]);
     cbar.Label.String = 'sub-shelf melting (m/a)';
-    cbar.TickLabels = {'-0.1' ,'0', '0.1', '1', '5', '10', '30'};
-    cbar.Ticks = [-log10(0.1*10^decimals) 0  log10(0.1*10^decimals)  log10(1*10^decimals) log10(5*10^decimals) log10(10*10^decimals) log10(30*10^decimals)];
+    cbar.TickLabels = {'-30' ,'-10', '-5', '-1', '-0.1', '0', '0.1'};
+    cbar.Ticks = [-log10(30*10^decimals) -log10(10*10^decimals) -log10(5*10^decimals) -log10(1*10^decimals) -log10(0.1*10^decimals) 0 log10(0.1*10^decimals)];
     PlotGroundingLines(CtrlVar, MUA, GF); PlotBoundary(MUA.Boundary,MUA.connectivity,MUA.coordinates,CtrlVar);
     
     % aggregate melt rates over the ice shelves (first guess, ignore the area of the elements)
@@ -268,7 +278,7 @@ if PICO_opts.InfoLevel>10
         average_x_loc_per_shelf(shelf_i) = mean(x(ShelfID==shelf_i));
         average_y_loc_per_shelf(shelf_i) = mean(y(ShelfID==shelf_i));
         average_melting_per_shelf(shelf_i) = sum(Int(ShelfID_per_ele==shelf_i))/sum(Areas(ShelfID_per_ele==shelf_i));
-        text(average_x_loc_per_shelf(shelf_i)/CtrlVar.PlotXYscale,average_y_loc_per_shelf(shelf_i)/CtrlVar.PlotXYscale, num2str(round(average_melting_per_shelf(shelf_i),2)) );
+        text(average_x_loc_per_shelf(shelf_i)/CtrlVar.PlotXYscale,average_y_loc_per_shelf(shelf_i)/CtrlVar.PlotXYscale, num2str(round(average_melting_per_shelf(shelf_i),2)) ,'Color','k','FontWeight','bold','FontSize',12,'BackgroundColor','w','Margin',0.1,'EdgeColor','r');
     end
     % CtrlVar.PlotXYscale
     title('PICO melt rates');
@@ -284,7 +294,7 @@ if PICO_opts.InfoLevel>10
     end
     fprintf('----------| ---------------|--------|---------|---------|---------|----------|----------|\n');
 elseif PICO_opts.InfoLevel>0
-    fprintf('PICO run complete, ice shelves have max, mean and min melt rates of %-g,  %-g,  %-g, respectively. \n',max(Mk),mean(Mk),min(Mk));
+    fprintf('PICO run complete, ice shelves have max, mean and min melt rates of %-g,  %-g,  %-g, respectively. \n',max(Mk.*-1),mean(Mk.*-1),min(Mk.*-1));
 end
 
 
