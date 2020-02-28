@@ -1,6 +1,6 @@
 function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO(UserVar,CtrlVar,MUA,GF,h,rhoi,rhow,varargin)
 
-%% PICO melt rate parameterisation v0.9 ===================================
+%% PICO melt rate parameterisation v0.91 ==================================
 % An Ua implementation of the Potsdam Ice-shelf Cavity mOdel (PICO),
 % details of the model can be found in Reese et al. 2018
 % https://www.the-cryosphere.net/12/1969/2018/
@@ -38,11 +38,13 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO(UserVar,CtrlVar,MUA,GF,h,rh
 % -------------------------------------------------------------------------
 % General options:
 %
-% - PICO_opts.algorithm: 'watershed', 'polygon' or 'oneshelf' (DEFAULT = 'watershed')
+% - PICO_opts.algorithm: 'graph', 'watershed', 'polygon' or 'oneshelf' (DEFAULT = 'watershed')
 % There are options related to how ice shelves are delineated. The
 % 'watershed' options converts MUA into a structured grid and then uses
 % image processing techniques to quickly define connected floating regions
-% as individual ice shelves. The 'polygon' option creates polygons out of
+% as individual ice shelves. The graph option constructs a graph network 
+%from the triangulation to find floating nodes that are connected in order
+% to seperate each ice shelf. The 'polygon' option creates polygons out of
 % each individual GL segment and the MeshBoundaryCoordinates and defines
 % individual ice shelves as floating nodes within these polygons. In
 % general the 'watershed' option will be considerably faster while the
@@ -68,8 +70,8 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO(UserVar,CtrlVar,MUA,GF,h,rh
 % Minimum area (m^2) for a floating region to be considered an ice shelf.
 %
 % - PICO_opts.minNumShelf (DEFAULT = 20)
-% Minimum number of floating nodes (polygon) or grid cells (watershed) for
-% a given region to be considered an ice shelf.
+% Minimum number of floating nodes (polygon + graph) or grid cells 
+% (watershed) for a given region to be considered an ice shelf.
 %
 % - PICO_opts.InfoLevel (DEFAULT = 100)
 % Same functionality as CtrlVar.InfoLevel, choose between 0,1,10,100 with 
@@ -102,7 +104,7 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO(UserVar,CtrlVar,MUA,GF,h,rh
 % - PICO_opts.gamTstar: turbulent temp. exch. coeff. (DEFAULT = 2e-5)
 % 
 % -------------------------------------------------------------------------
-% Options specific to PICO_opts.algorithm = 'watershed'
+% Options related to PICO_opts.algorithm = 'watershed'
 %
 % - PICO_opts.PICOres (DEFAULT = 6e3/3e3/1e3 depending on mesh size)
 % The resolution of the structured grid that the watershed option uses,
@@ -118,6 +120,7 @@ function [Mk,ShelfID,T0,S0,Tkm,Skm,q,PBOX,Ak] = PICO(UserVar,CtrlVar,MUA,GF,h,rh
 % your box geometry. The default value is set so that a simulation for the
 % whole of Antarctica will include Alexander Island but ignore Berkner
 % island to replicate the behaviour of the PICO implementation in PISM.
+% Note that the graph algorithm also makes use of this number.
 % 
 % -------------------------------------------------------------------------
 % Options specific to PICO_opts.algorithm = 'polygon'
